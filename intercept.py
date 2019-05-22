@@ -2,6 +2,7 @@ import scapy.all as scapy
 from scapy_http import http
 import argparse
 import json
+import engine
 
 def sniff_packet(interface):
     scapy.sniff(iface=interface, store=False, prn=process_packets)
@@ -22,7 +23,8 @@ def process_packets(packet):
         # print user_agent
         # print content_type
         # print referer
-        print(packet.show())
+        # print(packet.show())
+        engine.tokenize(load)
 
 def get_referer(packet):
 	return packet[http.HTTPRequest].Referer
@@ -44,7 +46,6 @@ def get_url(packet):
 
 def get_payload(packet):
     if packet.haslayer(scapy.Raw):
-        load = packet[scapy.Raw].load
-        return load
+        return packet[scapy.Raw].load
         
 sniff_packet('lo')

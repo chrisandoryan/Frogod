@@ -1,0 +1,70 @@
+import urllib.parse
+import re
+
+def tokenize(payload):
+    # unquoted = urllib.unquote(payload)
+    unquoted = urllib.parse.parse_qs(payload)
+    # generalize/normalize query by converting into meaningful token (based on query normalization scheme - SqliGoT (1))
+    for key, value in unquoted.items():
+        # loop over similar query param names (e.g name=ando&name=kevin)
+        for q in value:
+                q = q.decode("utf-8")
+                # split query structure by empty comment occurences
+                q = q.split('/**/')
+                for nq in q:
+                        print(nq)
+                        # step 2.d from (1)
+                        nq = re.sub(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', 'IPADDR', nq)
+                        # step 1 from (1)
+                        nq = re.sub(r'[\r\n\t]', ' Space ', nq)
+                        # step 2.b from (1)
+                        nq = re.sub(r'\b\d*\.\d+\b', ' DEC ', nq)
+                        # step 2.c from (1)
+                        nq = re.sub(r'\b[0-9]+\b', ' INT ', nq)
+                        # step 2.a from (1)
+                        nq = re.sub(r'\b0x[0-9A-F]+\b', ' HEX ', nq)
+                        # step 2.e from (1)
+                        nq = re.sub(r'\'[a-zA-Z]\'', ' CHR ', nq)
+                        # step 2.f from (1) need improvement
+                        nq = re.sub(r'(?<=")[a-zA-Z]+(?=")', ' STR ', nq)
+                        # step 9 from (1) convert query payload to uppercase
+                        nq = nq.upper()
+                        # tokenization of special characters
+                        nq = re.sub(r'(!=|<>)', ' NEQ ', nq)
+                        nq = nq.replace('&&', ' AND ')
+                        nq = nq.replace('||', ' OR ')
+                        nq = nq.replace('/*', ' CMTST ')
+                        nq = nq.replace('*/', ' CMTEND ')
+                        nq = nq.replace('~', ' TLDE ')
+                        nq = nq.replace('!', ' EXCLM ')
+                        nq = nq.replace('@', ' ATR ')
+                        nq = nq.replace('#', ' HASH ')
+                        nq = nq.replace('$', ' DLLR ')
+                        nq = nq.replace('%', ' PRCNT ')
+                        nq = nq.replace('^', ' XOR ')
+                        nq = nq.replace('&', ' BITAND ')
+                        nq = nq.replace('|', ' BITOR ')
+                        nq = nq.replace('*', ' STAR ')
+                        nq = nq.replace('-', ' MINUS ')
+                        nq = nq.replace('+', ' PLUS ')
+                        nq = nq.replace('=', ' EQ ')
+                        nq = nq.replace('{', ' LCBR ')
+                        nq = nq.replace('}', ' RCBR ')
+                        nq = nq.replace('[', ' LSQBR ')
+                        nq = nq.replace(']', ' RSQBR ')
+                        nq = re.sub(r'\((.+?)\)', ' \\1 ', nq)
+                        nq = nq.replace('\\', ' BSLSH ')
+                        nq = nq.replace(':', ' CLN ')
+                        nq = nq.replace(';', ' SMCLN ')
+                        nq = nq.replace('"', ' DQUT ')
+                        nq = nq.replace('\'', ' SQUT ')
+                        nq = nq.replace('<', ' LT ')
+                        nq = nq.replace('<', ' GT ')
+                        nq = nq.replace(',', ' CMMA ')
+                        nq = nq.replace('.', ' DOT ')
+                        nq = nq.replace('?', ' QSTN ')
+                        nq = nq.replace('/', ' SLSH ')
+
+                        # step 10 from (1) multiple spaces into single space
+                        nq = ' '.join(nq.split())
+                        print(nq)
