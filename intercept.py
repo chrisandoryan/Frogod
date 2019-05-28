@@ -24,7 +24,8 @@ def process_packets(packet):
         # print content_type
         # print referer
         # print(packet.show())
-        engine.tokenize(load)
+        normalized = engine.tokenize(load)
+        print(normalized)
 
 def get_referer(packet):
 	return packet[http.HTTPRequest].Referer
