@@ -1,6 +1,7 @@
 import urllib.parse
 import re
 import numpy
+import networkx as nx
 
 reserved = ['ACCESSIBLE', 'ACCOUNT', 'ACTION', 'ADD', 'ADMIN', 'AFTER', 'AGAINST', 'AGGREGATE', 'ALGORITHM', 'ALL', 'ALTER', 'ALWAYS', 'ANALYSE', 'ANALYZE', 'AND', 'ANY', 'AS', 'ASC', 'ASCII', 'ASENSITIVE', 'AT', 'AUTHORS', 'AVG', 'BACKUP', 'BEFORE', 'BEGIN', 'BETWEEN', 'BIGINT', 'BINARY', 'BINLOG', 'BIT', 'BLOB', 'BLOCK', 'BOOL', 'BOOLEAN', 'BOTH', 'BTREE', 'BUCKETS', 'BY', 'BYTE', 'CACHE', 'CALL', 'CASCADE', 'CASCADED', 'CASE', 'CAST', 'CHAIN', 'CHANGE', 'CHANGED', 'CHANNEL', 'CHAR', 'CHARACTER', 'CHARSET', 'CHECK', 'CHECKSUM', 'CIPHER', 'CLIENT', 'CLONE', 'CLOSE', 'COALESCE', 'CODE', 'COLLATE', 'COLLATION', 'COLUMN', 'COLUMNS', 'COMMENT', 'COMMIT', 'COMMITTED', 'COMPACT', 'COMPLETION', 'COMPONENT', 'COMPRESSED', 'COMPRESSION', 'CONCURRENT', 'CONCAT', 'CONDITION', 'CONNECTION', 'CONSISTENT', 'CONSTRAINT', 'CONTAINS', 'CONTEXT', 'CONTINUE', 'CONTRIBUTORS', 'CONVERT', 'CPU', 'CREATE', 'CROSS', 'CUBE', 'CURRENT', 'CURSOR', 'DATA', 'DATABASE', 'DATABASES', 'DATAFILE', 'DATE', 'DATETIME', 'DAY', 'DBMS_PIPE.RECEIVE_MESSAGE', 'DEALLOCATE', 'DEC', 'DECIMAL', 'DECLARE', 'DEFAULT', 'DEFINER', 'DEFINITION', 'DELAYED', 'DELETE', 'DESC', 'DESCRIBE', 'DESCRIPTION', 'DETERMINISTIC', 'DIAGNOSTICS', 'DIRECTORY', 'DISABLE', 'DISCARD', 'DISK', 'DISTINCT', 'DISTINCTROW', 'DIV', 'DO', 'DOUBLE', 'DROP', 'DUAL', 'DUMPFILE', 'DUPLICATE', 'DYNAMIC', 'EACH', 'ELSE', 'ELSEIF', 'EMPTY', 'ENABLE', 'ENCLOSED', 'ENCRYPTION', 'END', 'ENDS', 'ENGINE', 'ENGINES', 'ENUM', 'ERROR', 'ERRORS', 'ESCAPE', 'ESCAPED', 'EVENT', 'EVENTS', 'EVERY', 'EXCEPT', 'EXCHANGE', 'EXCLUDE', 'EXP', 'ELT', 'EXECUTE', 'EXISTS', 'EXIT', 'EXPANSION', 'EXPIRE', 'EXPLAIN', 'EXPORT', 'EXTENDED', 'FALSE', 'FAST', 'FAULTS', 'FETCH', 'FIELDS', 'FILE', 'FILTER', 'FIRST', 'FIXED', 'FLOAT', 'FLOOR', 'FLUSH', 'FOLLOWING', 'FOLLOWS', 'FOR', 'FORCE', 'FOREIGN', 'FORMAT', 'FOUND', 'FROM', 'FULL', 'FULLTEXT', 'FUNCTION', 'GENERAL', 'GENERATED', 'GEOMCOLLECTION', 'GEOMETRY', 'GEOMETRYCOLLECTION', 'GET', 'GLOBAL', 'GRANT', 'GRANTS', 'GROUP', 'GROUPING', 'GROUPS', 'HANDLER', 'HASH', 'HAVING', 'HELP', 'HISTOGRAM', 'HISTORY', 'HOST', 'HOSTS', 'HOUR', 'IDENTIFIED', 'IF', 'IGNORE', 'IMPORT', 'IN', 'INDEX', 'INDEXES', 'INFILE', 'INNER', 'INNOBASE', 'INNODB', 'INOUT', 'INSENSITIVE', 'INSERT', 'INSTALL', 'INSTANCE', 'INT', 'INTEGER', 'INTERVAL', 'INTO', 'INVISIBLE', 'INVOKER', 'IO', 'IPC', 'IS', 'ISOLATION', 'ISSUER', 'ITERATE', 'JOIN', 'JSON', 'KEY', 'KEYS', 'KILL', 'LAG', 'LANGUAGE', 'LAST', 'LEAD', 'LEADING', 'LEAVE', 'LEAVES', 'LEFT', 'LESS', 'LEVEL', 'LIKE', 'LIMIT', 'LINEAR', 'LINES', 'LINESTRING', 'LIST', 'LOAD', 'LOCAL', 'LOCALTIME', 'LOCALTIMESTAMP', 'LOCK', 'LOCKED', 'LOCKS', 'LOGFILE', 'LOGS', 'LONG', 'LONGBLOB', 'LONGTEXT', 'LOOP', 'MASTER', 'MATCH', 'MAXVALUE', 'MEDIUM', 'MEDIUMBLOB', 'MEDIUMINT', 'MEDIUMTEXT', 'MEMORY', 'MERGE', 'MICROSECOND', 'MIDDLEINT', 'MIGRATE', 'MINUTE', 'MOD', 'MODE', 'MODIFIES', 'MODIFY', 'MONTH', 'MULTILINESTRING', 'MULTIPOINT', 'MULTIPOLYGON', 'MUTEX', 'NAME', 'NAMES', 'NATIONAL', 'NATURAL', 'NCHAR', 'NDB', 'NDBCLUSTER', 'NESTED', 'NEVER', 'NEW', 'NEXT', 'NO', 'NODEGROUP', 'NONE', 'NOT', 'NOWAIT', 'NTILE', 'NULL', 'NULLS', 'NUMBER', 'NUMERIC', 'NVARCHAR', 'OF', 'OFFSET', 'MD5', 'ON', 'ONE', 'ONLY', 'OPEN', 'OPTIMIZE', 'OPTION', 'OPTIONALLY', 'OPTIONS', 'OR', 'ORDER', 'ORDINALITY', 'OTHERS', 'OUT', 'OUTER', 'OUTFILE', 'OVER', 'OWNER', 'PAGE', 'PARSER', 'PARTIAL', 'PARTITION', 'PARTITIONING', 'PARTITIONS', 'PASSWORD', 'PATH', 'PERSIST', 'PHASE', 'PLUGIN', 'PLUGINS', 'POINT', 'POLYGON', 'PORT', 'PRECEDES', 'PRECEDING', 'PRECISION', 'PREPARE', 'PRESERVE', 'PREV', 'PRIMARY', 'PRIVILEGES', 'PROCEDURE', 'PROCESS', 'PROCESSLIST', 'PROFILE', 'PROFILES', 'PROXY', 'PURGE', 'QUARTER', 'QUERY', 'QUICK', 'RANGE', 'RANK', 'READ', 'READS', 'REAL', 'REBUILD', 'RECOVER', 'RECURSIVE', 'REDOFILE', 'REDUNDANT', 'REFERENCE', 'REFERENCES', 'REGEXP', 'RELAY', 'RELAYLOG', 'RELEASE', 'RELOAD', 'REMOTE', 'REMOVE', 'RENAME', 'REORGANIZE', 'REPAIR', 'REPEAT', 'REPEATABLE', 'REPLACE', 'REPLICATION', 'REQUIRE', 'RESET', 'RESIGNAL', 'RESOURCE', 'RESPECT', 'RESTART', 'RESTORE', 'RESTRICT', 'RESUME', 'RETURN', 'RETURNS', 'REUSE', 'REVERSE', 'REVOKE', 'RIGHT', 'RLIKE', 'ROLE', 'ROLLBACK', 'ROLLUP', 'ROTATE', 'ROUTINE', 'ROW', 'ROWS', 'RTREE', 'SAVEPOINT', 'SCHEDULE', 'SCHEMA', 'SCHEMAS', 'SECOND', 'SECURITY', 'SELECT', 'SLEEP', 'SENSITIVE', 'SEPARATOR', 'SERIAL', 'SERIALIZABLE', 'SERVER', 'SESSION', 'SET', 'SHARE', 'SHOW', 'SHUTDOWN', 'SIGNAL', 'SIGNED', 'SIMPLE', 'SKIP', 'SLAVE', 'SLOW', 'SMALLINT', 'SNAPSHOT', 'SOCKET', 'SOME', 'SONAME', 'SOUNDS', 'SOURCE', 'SPATIAL', 'SPECIFIC', 'SQL', 'SQLEXCEPTION', 'SQLSTATE', 'SQLWARNING', 'SRID', 'SSL', 'STACKED', 'START', 'STARTING', 'STARTS', 'STATUS', 'STOP', 'STORAGE', 'STORED', 'STRING', 'SUBJECT', 'SUBPARTITION', 'SUBPARTITIONS', 'SUPER', 'SUSPEND', 'SWAPS', 'SWITCHES', 'SYSTEM', 'TABLE', 'TABLES', 'TABLESPACE', 'TEMPORARY', 'TEMPTABLE', 'TERMINATED', 'TEXT', 'THAN', 'THEN', 'TIES', 'TIME', 'TIMESTAMP', 'TIMESTAMPADD', 'TIMESTAMPDIFF', 'TINYBLOB', 'TINYINT', 'TINYTEXT', 'TO', 'TRAILING', 'TRANSACTION', 'TRIGGER', 'TRIGGERS', 'TRUE', 'TRUNCATE', 'TYPE', 'TYPES', 'UNBOUNDED', 'UNCOMMITTED', 'UNDEFINED', 'UNDO', 'UNDOFILE', 'UNICODE', 'UNINSTALL', 'UNION', 'UNIQUE', 'UNKNOWN', 'UNLOCK', 'UNSIGNED', 'UNTIL', 'UPDATE', 'UPGRADE', 'USAGE', 'USE', 'USER', 'USING', 'VALIDATION', 'VALUES', 'VARBINARY', 'VARCHAR', 'VARCHARACTER', 'VARIABLES', 'VARYING', 'VCPU', 'VIEW', 'VIRTUAL', 'VISIBLE', 'WAIT', 'WARNINGS', 'WEEK', 'WHEN', 'WHERE', 'WHILE', 'WINDOW', 'WITH', 'WITHOUT', 'WORK', 'WRAPPER', 'WRITE', 'XA', 'XID', 'XML', 'XOR', 'YEAR', 'ZEROFILL']
 
@@ -124,6 +125,7 @@ def tokenize(payload):
                         # step 10 from (1) multiple spaces into single space
                         nq = ' '.join(nq.split())
 
+                        print(nq)
                         graph_of_tokens(nq, 5, "proportional", "directed")
 
                         return nq
@@ -149,7 +151,32 @@ def graph_of_tokens(payload, wd_size, w_mode, g_type):
                 A[i,j] = A[i, j] + 1
             if g_type is 'undirected':
                 A[j,i] = A[i,j]
-    print(A)
+    # print(A)
+    measure_centrality(A, g_type)
     return A
 
+# 4.3.5. Centrality measure - Page 16, SQLiGoT
+def measure_centrality(A, g_type):
+    if g_type is 'directed':
+        # Since self loops are allowed in graph of tokens, weight of the loop needs to be added twice while computing degree centrality.
+        deg_cent = numpy.zeros(numpy.shape(A))
 
+        for i in range(len(A)):
+            for j in range(len(A[i])):
+                deg_cent[i,i] = A[i,i] + A[i,j]
+
+        print(deg_cent)
+        degree_centrality = nx.degree_centrality(A)
+        print(degree_centrality)
+    else:
+        deg_cent = numpy.zeros(numpy.shape(A))
+        indegrees = numpy.zeros(numpy.shape(A))
+        outdegrees = numpy.zeros(numpy.shape(A))
+        curr_row = 0
+        curr_col = 0
+        for i in range(len(A)):
+            curr_row = i
+            for j in range(len(A)):
+                curr_col = j
+                print("Outdegree", "A[{},{}]".format(curr_row, curr_col))
+            print("Indegree", "A[{},{}]".format(curr_row, curr_col))
