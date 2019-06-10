@@ -185,4 +185,6 @@ def measure_centrality(A, g_type):
 
 def train_model():
     # TODO: determine feature structures. then train the model.
+    # X = [[],[]] # training samples
+    # y = [] # class labels
     return False
