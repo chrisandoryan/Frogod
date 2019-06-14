@@ -13,6 +13,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            apt-get install python-scapy  
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
@@ -22,6 +23,6 @@ jobs:
           command: |
             echo "test should be run here"
       - run:
-          name: establishing engine
+          name: finishing deployment
           command: |
             python3 intercept.py
