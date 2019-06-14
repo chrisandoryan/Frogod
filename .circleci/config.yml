@@ -22,4 +22,4 @@ jobs:
       - run:
           name: finishing deployment
           command: |
-            pipenv run python intercept.py
+            venv/bin/python intercept.py
