@@ -1,7 +1,7 @@
 try:
     from urllib.parse import urlparse
 except ImportError:
-     from urlparse import urlparse
+    import urlparse
 import re
 import numpy
 import networkx as nx
