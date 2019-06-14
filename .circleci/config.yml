@@ -38,7 +38,7 @@ jobs:
       - run:
           name: finishing deployment
           command: |
-            ssh $SSHUSER@$SSHSERVER 'cd ~/research/Frogod && pip install -r requirements.txt && python intercept.py'
+            ssh $SSHUSER@$SSHSERVER 'cd ~/research/Frogod && pip install -r requirements.txt && circusd run.ini'
       
 workflows:
   version: 2
