@@ -1,0 +1,5 @@
+networkx
+scikit-learn
+numpy
+scapy
+scapy_http
