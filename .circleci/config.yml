@@ -30,7 +30,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "ec:eb:ad:9b:1f:4b:44:f3:6f:7e:14:b2:4d:60:84:4e"
+            - "70:a8:a0:75:5a:88:b5:03:3a:f9:c1:05:7c:17:8f:b0"
       - run:
           name: pulling to server
           command: |
