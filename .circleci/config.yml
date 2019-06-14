@@ -12,7 +12,6 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo apt-get install python-scapy  
             python3 -m venv venv
             . venv/bin/activate
             pip3 install -r requirements.txt
@@ -23,4 +22,4 @@ jobs:
       - run:
           name: finishing deployment
           command: |
-            python3 intercept.py
+            pipenv run python intercept.py
