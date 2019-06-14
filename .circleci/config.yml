@@ -20,12 +20,10 @@ jobs:
           command: |
             echo "test should be run here"
       - run:
-          name: finishing deployment
+          name: pulling to server
           command: |
             ssh root@128.199.75.109 'cd ~/research/Frogod && git pull origin master'
-  # These commands are triggered only after a successful (green) build.
-  deployment:
-    dev:
-      branch: master
-      commands:
-        - ssh root@128.199.75.109 'cd ~/research/Frogod && python intercept.py'
+      - run:
+          name: finishing deployment
+          command: |
+            ssh root@128.199.75.109 'cd ~/research/Frogod && python intercept.py'
