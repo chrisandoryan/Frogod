@@ -20,14 +20,11 @@ jobs:
           command: |
             echo "test should be run here"
 
-   deploy:
+  deploy:
     machine:
-        enabled: true
+      enabled: true
 
     working_directory: ~/research/deployment
-
-    environment:
-      HEROKU_APP: "sleepy-refuge-55486"
 
     steps:
       - checkout
