@@ -20,6 +20,7 @@ jobs:
           command: |
             echo "test should be run here"
   deploy-job:
+    machine: true
     steps:
       - add_ssh_keys:
           fingerprints:
