@@ -1,4 +1,7 @@
-import urllib.parse
+try:
+    from urllib.parse import urlparse
+except ImportError:
+     from urlparse import urlparse
 import re
 import numpy
 import networkx as nx
@@ -35,7 +38,7 @@ def convert_orphan_parentheses(expression):
 
 def tokenize(payload):
     # unquoted = urllib.unquote(payload)
-    unquoted = urllib.parse.parse_qs(payload)
+    unquoted = urlparse.parse_qs(payload)
     # generalize/normalize query by converting into meaningful token (based on query normalization scheme - SqliGoT (1))
     for key, value in unquoted.items():
         # loop over similar query param names (e.g name=ando&name=kevin)
