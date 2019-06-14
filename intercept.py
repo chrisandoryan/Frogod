@@ -1,11 +1,11 @@
-import scapy.all as scapy
+import scapy.all as sc
 from scapy_http import http
 import argparse
 import json
 import engine
 
 def sniff_packet(interface):
-    scapy.sniff(iface=interface, store=False, prn=process_packets)
+    sc.sniff(iface=interface, store=False, prn=process_packets)
 
 def process_packets(packet):
     if packet.haslayer(http.HTTPRequest):
@@ -46,7 +46,7 @@ def get_url(packet):
     return packet[http.HTTPRequest].Host + packet[http.HTTPRequest].Path
 
 def get_payload(packet):
-    if packet.haslayer(scapy.Raw):
-        return packet[scapy.Raw].load
+    if packet.haslayer(sc.Raw):
+        return packet[sc.Raw].load
         
 sniff_packet('lo')
