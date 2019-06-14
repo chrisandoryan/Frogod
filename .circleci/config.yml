@@ -9,15 +9,13 @@ jobs:
 
     steps:
       - checkout
-      # Step 2: create virtual env and install dependencies
       - run:
           name: install dependencies
           command: |
-            apt-get install python-scapy  
+            sudo apt-get install python-scapy  
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
-      # Step 3: run linter and tests
       - run:
           name: run tests
           command: |
