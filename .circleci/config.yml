@@ -19,6 +19,11 @@ jobs:
           name: run tests
           command: |
             echo "test should be run here"
+  deploy-job:
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "f6:c5:76:c0:74:c8:68:90:4a:24:94:e3:9f:11:48:50"
       - run:
           name: pulling to server
           command: |
@@ -27,3 +32,4 @@ jobs:
           name: finishing deployment
           command: |
             ssh root@128.199.75.109 'cd ~/research/Frogod && python intercept.py'
+      
