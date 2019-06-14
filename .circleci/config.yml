@@ -22,4 +22,10 @@ jobs:
       - run:
           name: finishing deployment
           command: |
-            venv/bin/python intercept.py
+            ssh root@128.199.75.109 'cd ~/research/Frogod && git pull origin master'
+ # These commands are triggered only after a successful (green) build.
+ deployment:
+   dev:
+     branch: master
+     commands:
+       - ssh root@128.199.75.109 'cd ~/research/Frogod && python intercept.py'

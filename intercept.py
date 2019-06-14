@@ -49,4 +49,4 @@ def get_payload(packet):
     if packet.haslayer(scapy.Raw):
         return packet[scapy.Raw].load
         
-sniff_packet('lo')
+sniff_packet('ens3')
