@@ -15,7 +15,7 @@ jobs:
             sudo apt-get install python-scapy  
             python3 -m venv venv
             . venv/bin/activate
-            pip install -r requirements.txt
+            pip3 install -r requirements.txt
       - run:
           name: run tests
           command: |
