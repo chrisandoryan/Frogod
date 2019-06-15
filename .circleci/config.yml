@@ -38,7 +38,7 @@ jobs:
       - run:
           name: finishing deployment
           command: |
-            ssh $SSHUSER@$SSHSERVER 'cd ~/research/Frogod && pip3 install -r requirements.txt && sudo pm2 start intercept.py --interpreter=python3 -- --get && sudo pm2 start intercept.py --interpreter=python3 -- --post '
+            ssh $SSHUSER@$SSHSERVER 'cd ~/research/Frogod && pip3 install -r requirements.txt && sudo pm2 start intercept.py --interpreter=python3 --name='GETINTC' -f -- --get && sudo pm2 start intercept.py --interpreter=python3 --name='POSTINTC' -f -- --post '
       
 workflows:
   version: 2
