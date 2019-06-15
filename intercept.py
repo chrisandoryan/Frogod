@@ -29,11 +29,12 @@ def process_packets(packet):
         # print content_type
         # print referer
         # print(packet.show())
-        for s in engine.tokenize(load):
+        inbound = url if args.get else load
+        for s in engine.tokenize(inbound):
             print("Writing inbound payload [{}]".format(count))
             s['request_method'] = request_method.decode("utf-8")
             s['user_agent'] = user_agent.decode("utf-8")
-            with open('samples/data.txt', 'a') as f:
+            with open('samples/{}.txt'.format('GET' if args.get else 'POST'), 'a') as f:
                 f.write(json.dumps(s) + "\n")
             count += 1
 
@@ -66,6 +67,12 @@ def get_payload(packet):
     if packet.haslayer(scapy.Raw):
         return packet[scapy.Raw].load
 
+parser = argparse.ArgumentParser(description='Packet interceptor for Cyber Security Reseach Team')
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('--get', action='store_true', help='Capture GET request')
+group.add_argument('--post', action='store_true', help='Capture POST request')
+
+args = parser.parse_args()
 
 print("Listening...")
-sniff_packet('ens3')
+sniff_packet('lo')
