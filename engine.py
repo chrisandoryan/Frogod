@@ -1,7 +1,5 @@
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    import urlparse
+import urllib.parse
+
 import re
 import numpy
 import networkx as nx
@@ -38,7 +36,7 @@ def convert_orphan_parentheses(expression):
 
 def tokenize(payload):
     # unquoted = urllib.unquote(payload)
-    unquoted = urlparse.parse_qs(payload)
+    unquoted = urllib.parse.parse_qs(payload)
     # generalize/normalize query by converting into meaningful token (based on query normalization scheme - SqliGoT (1))
     for key, value in unquoted.items():
         # loop over similar query param names (e.g name=ando&name=kevin)
@@ -49,7 +47,7 @@ def tokenize(payload):
                 for nq in q:
                         # nq = "-3022'))) OR (SELECT (CASE WHEN (7359=7359) THEN NULL ELSE CAST((CHR(120)||CHR(104)||CHR(111)||CHR(82)) AS NUMERIC) END)) IS NULL AND ((('"
                         # nq = '-2932") UNION ALL SELECT 1099,1099,1099,1099,1099,1099,1099-- -----CRDk'
-                        # print(nq)
+                        raw = nq
 
                         # step 2.d from (1)
                         nq = re.sub(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', 'IPADDR', nq)
@@ -129,10 +127,18 @@ def tokenize(payload):
                         # step 10 from (1) multiple spaces into single space
                         nq = ' '.join(nq.split())
 
-                        print(nq)
-                        graph_of_tokens(nq, 5, "proportional", "directed")
+                        # print(nq) # tokenized payload
+                        cent = graph_of_tokens(nq, 5, "proportional", "directed")
+                        # print(cent) # centrality of payload
 
-                        return nq
+                        # collect data for model training
+                        sample = {
+                            'raw_payload':raw,
+                            'tokenized_payload': nq,
+                            'centrality': cent
+                        }
+
+                        yield sample
                     
 # wd_size: window size
 # w_mode: weight mode (uniform | proportional)
@@ -156,8 +162,8 @@ def graph_of_tokens(payload, wd_size, w_mode, g_type):
             if g_type is 'undirected':
                 A[j,i] = A[i,j]
     # print(A)
-    measure_centrality(A, g_type)
-    return A
+    cent = measure_centrality(A, g_type)
+    return cent
 
 # 4.3.5. Centrality measure - Page 16, SQLiGoT
 def measure_centrality(A, g_type):
@@ -166,7 +172,7 @@ def measure_centrality(A, g_type):
     # https://networkx.github.io/documentation/latest/reference/generated/networkx.convert_matrix.from_numpy_array.html
     G = nx.from_numpy_array(A)
     degree_centrality = nx.degree_centrality(G)
-    print(degree_centrality)
+    return degree_centrality
     # 2. self recode from SQLiGoT paper
     # if g_type is 'directed':
     #     # Since self loops are allowed in graph of tokens, weight of the loop needs to be added twice while computing degree centrality.

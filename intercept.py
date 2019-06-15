@@ -4,10 +4,15 @@ import argparse
 import json
 import engine
 
+count = 1
+
+
 def sniff_packet(interface):
     scapy.sniff(iface=interface, store=False, prn=process_packets)
 
+
 def process_packets(packet):
+    global count
     if packet.haslayer(http.HTTPRequest):
         url = get_url(packet)
         request_method = get_method(packet)
@@ -24,29 +29,43 @@ def process_packets(packet):
         # print content_type
         # print referer
         # print(packet.show())
-        normalized = engine.tokenize(load)
-        print(normalized)
+        for s in engine.tokenize(load):
+            print("Writing inbound payload [{}]".format(count))
+            s['request_method'] = request_method.decode("utf-8")
+            s['user_agent'] = user_agent.decode("utf-8")
+            with open('samples/data.txt', 'a') as f:
+                f.write(json.dumps(s) + "\n")
+            count += 1
+
 
 def get_referer(packet):
-	return packet[http.HTTPRequest].Referer
+    return packet[http.HTTPRequest].Referer
+
 
 def get_method(packet):
-	return packet[http.HTTPRequest].Method
+    return packet[http.HTTPRequest].Method
+
 
 def get_cookie(packet):
-	return packet[http.HTTPRequest].Cookie
+    return packet[http.HTTPRequest].Cookie
+
 
 def get_ua(packet):
-	return getattr(packet[http.HTTPRequest], 'User-Agent')
+    return getattr(packet[http.HTTPRequest], 'User-Agent')
+
 
 def get_content_type(packet):
-	return getattr(packet[http.HTTPRequest], 'Content-Type')
-        
+    return getattr(packet[http.HTTPRequest], 'Content-Type')
+
+
 def get_url(packet):
     return packet[http.HTTPRequest].Host + packet[http.HTTPRequest].Path
+
 
 def get_payload(packet):
     if packet.haslayer(scapy.Raw):
         return packet[scapy.Raw].load
-        
+
+
+print("Listening...")
 sniff_packet('ens3')
