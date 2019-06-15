@@ -75,4 +75,4 @@ group.add_argument('--post', action='store_true', help='Capture POST request')
 args = parser.parse_args()
 
 print("Listening...")
-sniff_packet('lo')
+sniff_packet('ens3')
