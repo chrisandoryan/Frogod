@@ -90,8 +90,8 @@ def analyze(logs):
         for s in sqli:
             if s in r['request']:
                 # v='SQLi', r['datetime'],r['host'],r['method'],r['request']
-                v = SQLi(r['datetime'], r['host'], r['method'],
-                         r['request'], r['uagent'])
+                v = SQLi(r['datetime'], r['host'], r['method'], r['request'], r['uagent'])
+                print("[!] SQLi detected: %s" % r['request'])
                 yield v
 
         if 400 <= r['status'] <= 500:
@@ -119,9 +119,6 @@ def threat_grouping(arrays):
 
     return v
 
-def host_grouping(arrays):
-    return null
-
 if __name__ == '__main__':
     logfile = open("./samples/threaten/access.log", "r")
     loglines = tail(logfile)
@@ -130,10 +127,10 @@ if __name__ == '__main__':
     t_grouped = threat_grouping(analyze(logs))
 
     for g in t_grouped['XSS']:
-        print vars(g)
+        print(vars(g))
     
     for g in t_grouped['SQLi']:
-        print vars(g)
+        print(vars(g))
 
     # print grouped
 
