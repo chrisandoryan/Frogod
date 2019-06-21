@@ -46,6 +46,10 @@ def train_model():
     rept = classification_report(y_test,y_pred)
     acc = accuracy_score(y_pred, y_test)
 
+    print(conf)
+    print(rept)
+    print(acc)
+
     plt.imshow(conf, cmap='binary', interpolation='None')
     plt.show()
 
