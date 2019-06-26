@@ -31,6 +31,7 @@ def process_packets(packet):
         # print(packet[http.HTTPRequest])
         
         inbound = url if args.get else load
+        print(args.technique)
 
         # logs = pelotot.parsing(inbound)
         # pelotot.analyze(logs)
@@ -41,9 +42,12 @@ def process_packets(packet):
             s['user_agent'] = user_agent.decode("utf-8")
             if (args.label_normal):
                 s['label'] = 'normal'
+                s['technique'] = 'normal'
             elif (args.label_threat):
                 s['label'] = 'threat'
-            with open('samples/{}.txt'.format('GET_new' if args.get else 'POST_new'), 'a') as f:
+            if (args.technique):
+                s['technique'] = args.technique
+            with open('samples/{}.json'.format('GET_new' if args.get else 'POST_new'), 'a') as f:
                 f.write(json.dumps(s) + "\n")
             with open('samples/{}.csv'.format('GET_new' if args.get else 'POST_new'), 'a') as f:
                 # convert {0: 1.5, 1: 2.2, ...} to [1.5, 2.2, ...] to 1.5 2.2, ...
@@ -84,7 +88,7 @@ def get_payload(packet):
 parser = argparse.ArgumentParser(description='Packet inspection for Cyber Security Reseach Team')
 parser.add_argument('--label-threat', action='store_true', help='Auto-labelling inbound payload as a threat')
 parser.add_argument('--label-normal', action='store_true', help='Auto-labelling inbound payload as normal payload')
-parser.add_argument('--type', type=str, help='Auto-labelling inbound payload as normal payload')
+parser.add_argument('--technique', type=str, help='Specify SQLi attack technique')
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--get', action='store_true', help='Capture GET request')
 group.add_argument('--post', action='store_true', help='Capture POST request')
@@ -92,4 +96,4 @@ group.add_argument('--post', action='store_true', help='Capture POST request')
 args = parser.parse_args()
 
 print("Listening...")
-sniff_packet('Ethernet')
+sniff_packet('lo')

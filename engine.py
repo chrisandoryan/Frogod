@@ -35,12 +35,12 @@ def convert_orphan_parentheses(expression):
 
 def tokenize(payload):
     # unquoted = urllib.unquote(payload)
-    unquoted = urllib.parse.parse_qs(payload) # .decode('unicode_escape'))
+    unquoted = urllib.parse.parse_qs(payload.decode('unicode_escape')) # .decode('unicode_escape'))
     # generalize/normalize query by converting into meaningful token (based on query normalization scheme - SqliGoT (1))
     for key, value in unquoted.items():
         # loop over similar query param names (e.g name=ando&name=kevin)
         for q in value:
-                q = q.decode("utf-8")
+                # q = q.decode("utf-8")
                 # split query structure by empty comment occurences
                 q = q.split('/**/')
                 for nq in q:
