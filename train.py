@@ -28,16 +28,17 @@ def train_model():
     label_encoder = LabelEncoder()
     X_t = X.apply(label_encoder.fit_transform)
 
-    # print(X_t)
+    print(X_t)
+    input()
 
     # onehot_encoder = OneHotEncoder(categories='auto',sparse=False)
     # onehot_encoder.fit(X_t)
     # onehotlabels = label_encoder.transform(X_t).toarray()
     # print(onehotlabels.shape)
 
-    X_train, X_test, y_train, y_test = train_test_split(X_t, y, test_size = 0.20)
+    X_train, X_test, y_train, y_test = train_test_split(X_t, y, test_size = 0.40)
 
-    svclassifier = SVC(kernel='linear')  
+    svclassifier = SVC(kernel='rbc')  
     svclassifier.fit(X_train, y_train)  
 
     y_pred = svclassifier.predict(X_test)
