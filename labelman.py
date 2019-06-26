@@ -49,13 +49,52 @@ def replay_csic_dataset(mode):
 
     print("Finished sending %d requests" % send_count)
 
+def map_nominal_to_dataclass(nom):
+    return "normal" if nom == 0 else "threat"
+
+impact_indexes = ["N0", "C04", "CIA07", "A"]
+def map_nominal_to_impact(nom):
+    try:
+        return impact_indexes[int(nom)]
+    except ValueError:
+        return nom
+
+sqltype_indexes = ["nonthreat", "tautology", "incorrect", "union", "piggyback", "storedproc", "inference", "alternate"]
+def map_nominal_to_sqltype(nom):
+    return sqltype_indexes[int(nom)]
+
+def manual_interactive_labelling():
+    line_count = 0
+    dataset = open("./samples/GET_labelled.csv", "r")
+    raw_data = open("./samples/GET_labelled.csv", "r").readlines()
+    csv_reader = csv.reader(dataset, delimiter=',')
+    for row in csv_reader:
+        # print("Length: " + str(len(row)))
+        if len(row) < 8:
+            print("Payload: " + row[0])
+            attack_type = input("""[0] Nonthreat\n[1] Tautology\n[2] Logically Incorrect Query\n[3] Union Query\n[4] Piggy-backed Query\n[5] Stored Procedures\n[6] Inference\n[7] Alternate Encodings\nInput type [0..7]: """)
+            # data_impact = input("Impact [0 (N0) | 1 (C04) | 2 (CIA07) | 3 (A) | bit ]: ")
+            # print(map_nominal_to_dataclass(data_class))
+            with open("./samples/GET_labelled.csv", "w") as f:
+                raw_data[line_count] = raw_data[line_count].strip('\n') + ",{}\n".format(map_nominal_to_sqltype(attack_type))
+                # print(raw_data[line_count])
+                f.writelines(raw_data)
+                line_count += 1
+        else:
+            print("Already labelled, skipping..")
+            line_count += 1
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Data labeler for Cyber Security Reseach Team')
     parser.add_argument('--live', action='store_true', help='Capture GET request')
+    parser.add_argument('--interactive', action='store_true', help='Capture GET request')
 
     args = parser.parse_args()
 
-    replay_csic_dataset("norm")
+    if args.interactive:
+        manual_interactive_labelling()    
+    else:
+        replay_csic_dataset("norm")
     
     print("Program finished")
             

@@ -43,9 +43,9 @@ def process_packets(packet):
                 s['label'] = 'normal'
             elif (args.label_threat):
                 s['label'] = 'threat'
-            with open('samples/{}.txt'.format('GET' if args.get else 'POST2'), 'a') as f:
+            with open('samples/{}.txt'.format('GET_new' if args.get else 'POST_new'), 'a') as f:
                 f.write(json.dumps(s) + "\n")
-            with open('samples/{}.csv'.format('GET' if args.get else 'POST2'), 'a') as f:
+            with open('samples/{}.csv'.format('GET_new' if args.get else 'POST_new'), 'a') as f:
                 # convert {0: 1.5, 1: 2.2, ...} to [1.5, 2.2, ...] to 1.5 2.2, ...
                 s['centrality'] = ' '.join(map(str, list(s['centrality'].values())))
                 writer = csv.writer(f)
@@ -84,6 +84,7 @@ def get_payload(packet):
 parser = argparse.ArgumentParser(description='Packet inspection for Cyber Security Reseach Team')
 parser.add_argument('--label-threat', action='store_true', help='Auto-labelling inbound payload as a threat')
 parser.add_argument('--label-normal', action='store_true', help='Auto-labelling inbound payload as normal payload')
+parser.add_argument('--type', type=str, help='Auto-labelling inbound payload as normal payload')
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--get', action='store_true', help='Capture GET request')
 group.add_argument('--post', action='store_true', help='Capture POST request')
@@ -91,4 +92,4 @@ group.add_argument('--post', action='store_true', help='Capture POST request')
 args = parser.parse_args()
 
 print("Listening...")
-sniff_packet('ens3')
+sniff_packet('Ethernet')
