@@ -6,17 +6,27 @@ from mlxtend.plotting import plot_decision_regions
 
 from sklearn.model_selection import train_test_split  
 from sklearn.svm import SVC  
+
 from sklearn.metrics import classification_report, confusion_matrix  
+from sklearn.metrics import accuracy_score
+
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import RobustScaler
+from sklearn.feature_extraction.text import CountVectorizer
+
 from sklearn.externals import joblib
 
+"""  Parameter Tuning  """
+gamma = 100
+kernel = "rbf"
+c = 10
+"""                    """
+
 def train_model():
-    # TODO: determine feature structures. then train the model.
     data = pd.read_csv('./samples/GET_new.csv')
-    print(data.shape)
-    print(data.head())
+    # print(data.shape)
+    # print(data.head())
 
     # remove unused data column
     data.drop('uagent', axis=1, inplace=True)
@@ -27,6 +37,7 @@ def train_model():
     # data separation
     X = data.drop('label', axis=1)  
     X = X.select_dtypes(include=[object])
+
     y = data['label']
 
     # fit and transform
@@ -34,17 +45,37 @@ def train_model():
     X_t = X.apply(label_encoder.fit_transform)
     y_t = label_encoder.fit(y).transform(y)
 
-    # print(X_t)
-    # input()
+    # vectorizer = CountVectorizer()
+    # vectorizer.fit(X['token'])
+
+    # print(vectorizer.vocabulary_)
+
+    scaler = RobustScaler()
+    X_t = scaler.fit_transform(X_t)
+
+    # count_vec = CountVectorizer()
+    # count_occurs = count_vec.fit_transform([doc])
+    # count_occur_df = pd.DataFrame(
+    # (count, word) for word, count in
+    #  zip(count_occurs.toarray().tolist()[0], 
+    # count_vec.get_feature_names()))
+    # count_occur_df.columns = ['Word', 'Count']
+    # count_occur_df.sort_values('Count', ascending=False, inplace=True)
+    # count_occur_df.head()
+
+    print("Features: ")
+    print(X_t)
+    print("Labels: ")
+    print(y_t)
 
     # onehot_encoder = OneHotEncoder(categories='auto',sparse=False)
     # onehot_encoder.fit(X_t)
     # onehotlabels = label_encoder.transform(X_t).toarray()
     # print(onehotlabels.shape)
 
-    X_train, X_test, y_train, y_test = train_test_split(X_t, y, test_size = 0.40)
+    X_train, X_test, y_train, y_test = train_test_split(X_t, y, test_size = 0.30)
 
-    svclassifier = SVC(kernel='linear')  
+    svclassifier = SVC(kernel=kernel, gamma=gamma, C=c, cache_size=7000, verbose=True)  
     svclassifier.fit(X_train, y_train)  
 
     y_pred = svclassifier.predict(X_test)
@@ -58,10 +89,10 @@ def train_model():
     print(acc)
 
     # plot_decision_regions(
-    #     X=X_t.values, 
+    #     X=X_t, 
     #     y=y_t, clf=svclassifier, 
     #     legend=2,
-    #     feature_index=[0,1],
+    #     feature_index=[0,2],
     # )
 
     # plt.xlabel(X_t.columns[0], size=14)
