@@ -4,3 +4,5 @@ scikit-learn
 numpy
 scapy_http
 pandas
+matplotlib
+mlxtend
