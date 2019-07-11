@@ -6,3 +6,5 @@ scapy_http
 pandas
 matplotlib
 mlxtend
+pypcap
+dpkt

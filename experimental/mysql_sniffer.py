@@ -39,6 +39,7 @@ import struct
 from random import random
 from datetime import datetime
 from functools import wraps
+# import pyshark
 
 # mysql commands
 # http://dev.mysql.com/doc/internals/en/client-server-protocol.html
@@ -74,15 +75,23 @@ COM_STMT_FETCH = 28
 COM_DAEMON = 29
 COM_END = 30
 
+class MysqlProtocol:
+
+    # parser = pyshark.InMemCapture()
+
+    def __init__(self, bytes):
+        self.server_status = bytes.hex().rstrip('00')[-2:] # select query ends with 22, insert query ends with 02
+        self.affected_rows = bytes[5]
+        self.num_fields = bytes[4]
+
 class MysqlSniffer(object):
 
-    def __init__(self, interface, port, filter, ratio, outfile):
+    def __init__(self, interface, port, filter, ratio, outfile): 
         self.interface = interface
         self.port = port
         self.filter = filter
         self.ratio = ratio
         self.output_file = outfile
-
 
     def memoize(obj):
         cache = obj.cache = {}
@@ -98,37 +107,43 @@ class MysqlSniffer(object):
         return socket.inet_ntoa(fcntl.ioctl(
             s.fileno(),
             0x8915,  # SIOCGIFADDR
-            struct.pack('256s', ifname[:15])
+            struct.pack('256s', ifname[:15].encode())
         )[20:24])
 
-
     def bin2ip(self, binary):
-        return ".".join([str(x) for x in map(ord, binary)])
+        return ".".join([str(x) for x in binary])
 
     def print_query(self, ts, src, dst, sport, dport, data):
+        # packet = self.parser.parse_packet(data)
+        # print((dir(packet)))
+        # print(data.decode(errors='ignore'))
         if len(data) < 6:
             return
-        cmd = ord(data[4])
+        cmd = data[4]
+        print("WITH COM: %d" % cmd)
+        # print(data.decode(errors='ignore'))
+        MysqlProtocol(data)
         if cmd == COM_QUERY:
             if random() > self.ratio:
                 return
-            query = "%s %s:%d %s" % (datetime.fromtimestamp(ts), src, sport, data[5:].replace("\n", " "))
+            query = "%s %s:%d %s" % (datetime.fromtimestamp(ts), src, sport, data[5:].decode().replace("\n", " "))
             if self.output_file:
                 with open(self.output_file, 'a') as f:
                     f.write(query + "\n")
             else:
-                print query
+                print(query)
 
     def start_sniffer(self):
         pc = pcap.pcap(name = self.interface)
         if not self.filter:
-            self.filter = "dst host %s and tcp dst port %d" % (self.get_ip_address(self.interface), self.port)
-        print 'sniffer filter: %s' % self.filter
+            self.filter = "dst host %s and (tcp dst port %d or tcp src port %d)" % (self.get_ip_address(self.interface), self.port, self.port)
+        print('sniff filter: %s' % self.filter)
         pc.setfilter(self.filter)
         decode = { pcap.DLT_LOOP : dpkt.loopback.Loopback,
                    pcap.DLT_NULL : dpkt.loopback.Loopback,
                    pcap.DLT_EN10MB : dpkt.ethernet.Ethernet }[pc.datalink()]
         for ts, raw_pkt in pc:
+            print(ts)
             ip_pkt = decode(raw_pkt).data
             tcp_pkt = ip_pkt.data
             if tcp_pkt.flags & dpkt.tcp.TH_PUSH:
@@ -139,15 +154,18 @@ class MysqlSniffer(object):
 
 def main():
     parser = argparse.ArgumentParser(description="Sniffer mysql.")
-    parser.add_argument("-i", "--interface", type=str, nargs="?", help="interface you want to sniffer", default="eth1")
+    parser.add_argument("-i", "--interface", type=str, nargs="?", help="interface you want to sniffer", default="lo")
     parser.add_argument("-p", "--port", type=int, nargs="?", help="the mysql port used", default=3306)
     parser.add_argument("-f", "--filter", type=str, nargs="?", help="packet filter", default=None)
     parser.add_argument("-r", "--ratio", type=float, nargs="?", help="filter ratio, from 0 to 1", default=1) # 100%
     parser.add_argument("-o", "--output-file", type=str, nargs="?", help="output file", default=None)
     args = parser.parse_args()
     sniffer = MysqlSniffer(args.interface, args.port, args.filter, args.ratio, args.output_file)
-    print 'ratio=%f, o=%s' % (args.ratio, args.output_file)
+    print('ratio=%f, o=%s' % (args.ratio, args.output_file))
     sniffer.start_sniffer()
     
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt as e:
+        exit()

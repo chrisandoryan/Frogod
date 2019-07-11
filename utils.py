@@ -17,4 +17,12 @@ def send_request(url, payload, method):
     elif method == "POST":
         res = requests.post(url, data=payload)
     # print(res.status_code)
+
+def expand(x):
+    yield x
+    while x.payload:
+        x = x.payload
+        yield x
+
+
     
