@@ -4,7 +4,7 @@ for i in "${!types[@]}";
 do 
     echo "${flag[$i]}"
     echo "${types[$i]}"
-    python3 intercept.py --get --label-threat --technique "${types[$i]}" &
+    python3 httpsniffer.py --get --label-threat --technique "${types[$i]}" &
     listener_pid=($!)
     echo "aid=${listener_pid}"
     sleep 5
@@ -18,5 +18,5 @@ do
 done
 
 # ps -aux | grep python
-# pkill -f intercept.py
+# pkill -f httpsniffer.py
 # todo: use tamper space2comment
