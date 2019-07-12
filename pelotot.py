@@ -5,6 +5,7 @@ from collections import defaultdict
 from pprint import pprint
 import itertools
 from operator import itemgetter
+from utils import tail
 
 
 class SQLi:
@@ -37,14 +38,14 @@ def encode_html(decoded):
     return urllib.quote(decoded)
 
 
-def tail(logfile):
-    logfile.seek(0, 2)
-    while True:
-        line = logfile.readline()
-        if not line:
-            time.sleep(0.1)
-            continue
-        yield line
+# def tail(logfile):
+#     logfile.seek(0, 2)
+#     while True:
+#         line = logfile.readline()
+#         if not line:
+#             time.sleep(0.1)
+#             continue
+#         yield line
 
 
 def parsing(loglines):
@@ -120,7 +121,7 @@ def threat_grouping(arrays):
     return v
 
 if __name__ == '__main__':
-    logfile = open("./samples/threaten/access.log", "r")
+    logfile = open("./samples/GET.csv", "r")
     loglines = tail(logfile)
 
     logs = parsing(loglines)

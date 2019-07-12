@@ -7,6 +7,7 @@ import struct
 from random import random
 from datetime import datetime
 from functools import wraps
+import Frogod.utils
 
 # mysql commands
 # http://dev.mysql.com/doc/internals/en/client-server-protocol.html
@@ -109,6 +110,6 @@ if __name__ == "__main__":
 """
 TODO:
 1. calculate query execution time DONE
-2. calculate how many rows returned (on SELECT query)
-3. calculate how many rows affected (on INSERT, UPDATE, DELETE query)
+2. calculate how many rows returned (on SELECT query) from slow query log
+3. calculate how many rows affected (on INSERT, UPDATE, DELETE query) from slow query log
 """

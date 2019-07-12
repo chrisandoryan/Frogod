@@ -4,7 +4,6 @@ import requests
 def tail(logfile):
     logfile.seek(0, 2)
     while True:
-        0
         line = logfile.readline()
         if not line:
             time.sleep(0.1)
