@@ -1,1 +1,0 @@
-[{"ip": "192.168.1.9", "instances": {}, "traffic": [], "credentials": {}, "type": "MYSQL", "port": 3306}, {"ip": "127.0.0.1", "instances": {}, "traffic": [], "credentials": {}, "type": "MYSQL", "port": "3306"}]
