@@ -6,7 +6,7 @@ def tail(logfile):
     while True:
         line = logfile.readline()
         if not line:
-            time.sleep(0.1)
+            time.sleep(0.01)
             continue
         yield line
 

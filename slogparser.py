@@ -56,19 +56,8 @@ from utils import tail
 
 class SlowQueryParser(object):
 
-    def __init__(self, start_time, end_time, log_file, tmp_file, sort, stream):
-        self.start_time = start_time
-        self.end_time = end_time
-        self.log_file = log_file
-        self.tmp_file = tmp_file
+    def __init__(self, stream):
         self.stream = stream
-        self.sort = sort
-        if not self.start_time:
-            self.start_time = datetime.strftime(
-                datetime.now() - timedelta(seconds=7200), '%y%m%d %H:')
-        if not self.end_time:
-            self.end_time = datetime.strftime(
-                datetime.now() - timedelta(seconds=7200), '%y%m%d %H:')
 
     def pattern(self, sql):
         res = sqlparse.parse(sql)
@@ -144,127 +133,46 @@ class SlowQueryParser(object):
 
     def calc_stats(self):
         slow_queries = {}
-        with open(self.log_file) as f:
-            for e in SlowQueryLog(self.stream):
-                print(e)
-                if not e.query_time:
-                    continue
-                try:
-                    query_pattern = self.pattern(self.clean(e.query))
-                except:
-                    pass
-                if query_pattern not in slow_queries:
-                    slow_queries[query_pattern] = []
-                slow_queries[query_pattern].append(e)
-        ret = {}
-        for query_pattern, entry_list in list(slow_queries.items()):
-            entry = {
-                'org': entry_list[0],
-                'avg_query_time': sum([e.query_time for e in entry_list]) / len(entry_list),
-                'count': len(entry_list),
-                'query_pattern': query_pattern,
-                'query': self.clean(entry_list[0].query),
-            }
-            ret[query_pattern] = entry
-        return ret
-
-    def dump_slow_query_log(self):
-        with open(self.log_file) as f:
-            with open(self.tmp_file, 'w') as fw:
-                status = -1
-                for piece in self.read_by_chunks(f):
-                    if status == -1:
-                        pos = piece.find('# Time: %s' % self.start_time)
-                        if pos < 0:
-                            continue
-                        else:
-                            status = 0
-                            fw.write(piece[pos:])
-                    else:
-                        pos = piece.find('# Time: %s' % self.end_time)
-                        if pos < 0:
-                            fw.write(piece)
-                        else:
-                            fw.write(piece[:pos])
-                            return
-
-    def parser_from_std(self):
-        with open(self.tmp_file, 'w') as fw:
-            for line in sys.stdin:
-                fw.write(line)
-        stats = self.calc_stats()
-        res = []
-        for query_pattern, entry in list(stats.items()):
-            res.append(entry)
-        if self.sort == 't':
-            res = sorted(res, reverse=True, key=lambda x: x['avg_query_time'])
-        elif self.sort == 'a':
-            res = sorted(res, reverse=True,
-                         key=lambda x: x['avg_query_time'] * x['count'])
-        else:
-            res = sorted(res, reverse=True, key=lambda x: x['count'])
-        for q in res:
-            print('count: %s, avg_time: %.2fs, query: %s' % (q['count'], q['avg_query_time'],
-                                                             self.prettify_sql(q['query'])))
-            print('##################################')
-
-    def parser_from_log(self):
-        self.dump_slow_query_log()
-        stats = self.calc_stats()
-        res = []
-        for query_pattern, entry in list(stats.items()):
-            res.append(entry)
-        if self.sort == 't':
-            res = sorted(res, reverse=True, key=lambda x: x['avg_query_time'])
-        elif self.sort == 'a':
-            res = sorted(res, reverse=True,
-                         key=lambda x: x['avg_query_time'] * x['count'])
-        else:
-            res = sorted(res, reverse=True, key=lambda x: x['count'])
-        for q in res:
-            print('count: %s, avg_time: %.2fs, query: %s' % (q['count'], q['avg_query_time'],
-                                                             self.prettify_sql(q['query'])))
-            print('##################################')
+        for e in SlowQueryLog(self.stream):
+            print(e)
+            if not e.query_time:
+                continue
+            try:
+                query_pattern = self.pattern(self.clean(e.query))
+            except:
+                pass
+            if query_pattern not in slow_queries:
+                slow_queries[query_pattern] = []
+            slow_queries[query_pattern].append(e)
+            ret = {}
+            for query_pattern, entry_list in list(slow_queries.items()):
+                entry = {
+                    'org': entry_list[0],
+                    'query_time': e.query_time,
+                    'query_pattern': query_pattern,
+                    'query': self.clean(entry_list[0].query),
+                    'rows_sent': e.rows_sent,
+                    'rows_examined': e.rows_examined,
+                }
+                # ret[query_pattern] = entry
+                yield entry
 
     def start_parser(self):
         stats = self.calc_stats()
         res = []
-        for query_pattern, entry in list(stats.items()):
-            res.append(entry)
-        if self.sort == 't':
-            res = sorted(res, reverse=True, key=lambda x: x['avg_query_time'])
-        elif self.sort == 'a':
-            res = sorted(res, reverse=True,
-                         key=lambda x: x['avg_query_time'] * x['count'])
-        else:
-            res = sorted(res, reverse=True, key=lambda x: x['count'])
-        for q in res:
-            print('count: %s, avg_time: %.2fs, query: %s' % (q['count'], q['avg_query_time'],
-                                                             self.prettify_sql(q['query'])))
-            print('##################################')
-
+        for s in stats:
+            print('[*] query: %s, time: %.2fs, rows: %d' % (self.prettify_sql(s['query']), s['query_time'], s['rows_sent']))
+            # for query_pattern, entry in list(s.items()):
+            #     res.append(entry)
+            # for q in res:
+            #     print('[*] count: %s, avg_time: %.2fs, query: %s' % (q['count'], q['avg_query_time'],
+            #                 self.prettify_sql(q['query'])))
 
 def main():
-    parser = argparse.ArgumentParser(description="mysql slow query parser")
-    parser.add_argument("-f", "--log-file", type=str, nargs="?",
-                        help="the mysql slow query file", default=None)
-    parser.add_argument("-b", "--begin-time", type=str,
-                        nargs="?", help="the begin time to parse", default=None)
-    parser.add_argument("-e", "--end-time", type=str, nargs="?",
-                        help="the end time to parse", default=None)
-    parser.add_argument("-t", "--tmp-file", type=str, nargs="?",
-                        help="the tmp file", default='/tmp/mysql-slow-query-parse')
-    parser.add_argument("-s", "--sort", type=str,
-                        help="sort method, c: count; t:average time; a:c*t", default='c')
-    args = parser.parse_args()
-    print('begin_time: %s, end_time: %s, log_file: %s, sort method: %s' % (args.begin_time,
-                                                                           args.end_time, args.log_file, args.sort))
-
     logfile = open('/var/log/mysql/slow-query.log', 'r')
     loglines = tail(logfile)
 
-    query_parser = SlowQueryParser(args.begin_time, args.end_time,
-                                   '/var/log/mysql/slow-query.log', '/tmp/slow_queriez.log', args.sort, loglines)
+    query_parser = SlowQueryParser(loglines)
     query_parser.start_parser()
 
 
