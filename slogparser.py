@@ -52,7 +52,10 @@ from datetime import datetime, timedelta
 from sqlog import SlowQueryLog
 from sqlparse.tokens import Token
 from utils import tail
+import time
+import csv
 
+SLOW_QUERY_LOG_PATH = ''
 
 class SlowQueryParser(object):
 
@@ -162,6 +165,16 @@ class SlowQueryParser(object):
         res = []
         for s in stats:
             print('[*] query: %s, time: %.2fs, rows: %d' % (self.prettify_sql(s['query']), s['query_time'], s['rows_sent']))
+            with open('final_sample/LOG_mysql.csv', 'a') as f:
+                s = {
+                    'query': self.prettify_sql(s['query']),
+                    'query_time': s['query_time'],
+                    'rows_sent': s['rows_sent'],
+                    'rows_examined': s['rows_examined'],
+                    'timestamp': int(time.time())
+                }   
+                writer = csv.writer(f)
+                writer.writerow(list(s.values())) 
             # for query_pattern, entry in list(s.items()):
             #     res.append(entry)
             # for q in res:
@@ -169,7 +182,7 @@ class SlowQueryParser(object):
             #                 self.prettify_sql(q['query'])))
 
 def main():
-    logfile = open('/var/log/mysql/slow-query.log', 'r')
+    logfile = open(SLOW_QUERY_LOG_PATH, 'r')
     loglines = tail(logfile)
 
     query_parser = SlowQueryParser(loglines)
