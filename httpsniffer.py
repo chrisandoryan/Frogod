@@ -4,6 +4,7 @@ import argparse
 import json
 import csv
 import Frogod.engine
+import time
 
 count = 1
 
@@ -47,11 +48,12 @@ def process_packets(packet):
                 s['label'] = 'threat'
             if (args.technique):
                 s['technique'] = args.technique
-            with open('samples/{}.json'.format('GET_new' if args.get else 'POST_new'), 'a') as f:
+            with open('final_sample/{}.json'.format('GET_http' if args.get else 'POST_http'), 'a') as f:
                 f.write(json.dumps(s) + "\n")
-            with open('samples/{}.csv'.format('GET_new' if args.get else 'POST_new'), 'a') as f:
+            with open('final_sample/{}.csv'.format('GET_http' if args.get else 'POST_http'), 'a') as f:
                 # convert {0: 1.5, 1: 2.2, ...} to [1.5, 2.2, ...] to 1.5 2.2, ...
                 s['centrality'] = ' '.join(map(str, list(s['centrality'].values())))
+                s['timestamp'] = int(time.time())
                 writer = csv.writer(f)
                 writer.writerow(list(s.values()))
             count += 1
