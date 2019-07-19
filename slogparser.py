@@ -166,17 +166,18 @@ class SlowQueryParser(object):
         for s in stats:
             # print('[*] query: %s, time: %.2fs, rows: %d' % (self.prettify_sql(s['query']), s['query_time'], s['rows_sent']))
             with open('data_temp/LOG_mysql.csv', 'a') as f:
-                s = {
+                obj = {
                     'query': s['query'],
                     'query_time': s['query_time'],
                     'rows_sent': s['rows_sent'],
                     'rows_examined': s['rows_examined'],
-                    'timestamp': s['datetime'] if s['query'].startswith("SET timestamp=") else int(time.time())
+                    'timestamp': int(time.mktime(s['org']['datetime'].timetuple()))
                 }   
                 writer = csv.writer(f)
-                writer.writerow(list(s.values())) 
-                print(s['datetime'] if s['query'].startswith("SET timestamp=") else s)
-                # yield s
+                writer.writerow(list(obj.values())) 
+                print(obj)
+                # print(time.mktime(s['org']['datetime'].timetuple()))
+                # yield obj
             # for query_pattern, entry in list(s.items()):
             #     res.append(entry)
             # for q in res:
