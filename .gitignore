@@ -1,2 +1,3 @@
 *.pyc
 experimental/
+data*.0/
