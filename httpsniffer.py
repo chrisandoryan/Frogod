@@ -3,8 +3,10 @@ from scapy_http import http
 import argparse
 import json
 import csv
-import Frogod.engine
 import time
+
+import engine
+import slogparser
 
 count = 1
 
@@ -32,13 +34,14 @@ def process_packets(packet):
         # print(packet[http.HTTPRequest])
         
         inbound = url if args.get else load
-        print(args.technique)
+        # print(args.technique)
 
         # logs = pelotot.parsing(inbound)
         # pelotot.analyze(logs)
         
         for s in engine.tokenize(inbound):
-            print("Writing inbound payload [{}]".format(count))
+            # print("Writing inbound payload [{}]".format(count))
+            print(inbound)
             s['request_method'] = request_method.decode("utf-8")
             s['user_agent'] = user_agent.decode("utf-8")
             if (args.label_normal):
@@ -48,9 +51,9 @@ def process_packets(packet):
                 s['label'] = 'threat'
             if (args.technique):
                 s['technique'] = args.technique
-            with open('final_sample/{}.json'.format('GET_http' if args.get else 'POST_http'), 'a') as f:
+            with open('data_temp/{}.json'.format('GET_http' if args.get else 'POST_http'), 'a') as f:
                 f.write(json.dumps(s) + "\n")
-            with open('final_sample/{}.csv'.format('GET_http' if args.get else 'POST_http'), 'a') as f:
+            with open('data_temp/{}.csv'.format('GET_http' if args.get else 'POST_http'), 'a') as f:
                 # convert {0: 1.5, 1: 2.2, ...} to [1.5, 2.2, ...] to 1.5 2.2, ...
                 s['centrality'] = ' '.join(map(str, list(s['centrality'].values())))
                 s['timestamp'] = int(time.time())

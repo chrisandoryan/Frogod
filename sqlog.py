@@ -89,6 +89,7 @@ class LogParserBase(object):
         Returns next line as string or None
         """
         line = next(self._stream) # .readline()
+        # print(line)
         if not line:
             return None
         return line.rstrip('\r\n')
@@ -647,6 +648,7 @@ class SlowQueryLog(LogParserBase):
             if entry['database'] is None and self._current_database is not None:
                 entry['database'] = self._current_database
         entry['query'] = '\n'.join(query)
+        print(entry['query'])
         self._cached_line = line
 
     def _parse_entry(self):

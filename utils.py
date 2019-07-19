@@ -8,6 +8,7 @@ def tail(logfile):
         if not line:
             time.sleep(0.01)
             continue
+        # print(line)
         yield line
 
 def send_request(url, payload, method):

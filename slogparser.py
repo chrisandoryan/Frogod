@@ -55,7 +55,7 @@ from utils import tail
 import time
 import csv
 
-SLOW_QUERY_LOG_PATH = ''
+SLOW_QUERY_LOG_PATH = '/var/log/mysql/slow-query.log' # path to mysql slow query log file
 
 class SlowQueryParser(object):
 
@@ -164,17 +164,19 @@ class SlowQueryParser(object):
         stats = self.calc_stats()
         res = []
         for s in stats:
-            print('[*] query: %s, time: %.2fs, rows: %d' % (self.prettify_sql(s['query']), s['query_time'], s['rows_sent']))
-            with open('final_sample/LOG_mysql.csv', 'a') as f:
+            # print('[*] query: %s, time: %.2fs, rows: %d' % (self.prettify_sql(s['query']), s['query_time'], s['rows_sent']))
+            with open('data_temp/LOG_mysql.csv', 'a') as f:
                 s = {
-                    'query': self.prettify_sql(s['query']),
+                    'query': s['query'],
                     'query_time': s['query_time'],
                     'rows_sent': s['rows_sent'],
                     'rows_examined': s['rows_examined'],
-                    'timestamp': int(time.time())
+                    'timestamp': s['datetime'] if s['query'].startswith("SET timestamp=") else int(time.time())
                 }   
                 writer = csv.writer(f)
                 writer.writerow(list(s.values())) 
+                print(s['datetime'] if s['query'].startswith("SET timestamp=") else s)
+                # yield s
             # for query_pattern, entry in list(s.items()):
             #     res.append(entry)
             # for q in res:
