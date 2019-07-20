@@ -7,6 +7,7 @@ import re
 import decimal
 import datetime
 import dateutil.parser
+import os
 
 from exceptions import LogParserError
 
@@ -88,8 +89,10 @@ class LogParserBase(object):
 
         Returns next line as string or None
         """
+        # os.system("clear")
         line = next(self._stream) # .readline()
-        # print(line)
+        # print("Line: " + line.strip())
+        # input()
         if not line:
             return None
         return line.rstrip('\r\n')
@@ -648,7 +651,7 @@ class SlowQueryLog(LogParserBase):
             if entry['database'] is None and self._current_database is not None:
                 entry['database'] = self._current_database
         entry['query'] = '\n'.join(query)
-        print(entry['query'])
+        # print(entry['query'])
         self._cached_line = line
 
     def _parse_entry(self):
@@ -770,15 +773,15 @@ class SlowQueryLogEntry(LogEntryBase):
         self['rows_examined'] = None
         self['rows_sent'] = None
 
-    def __str__(self):
-        """String representation of SlowQueryLogEntry
-        """
-        param = self.copy()
-        param['clsname'] = self.__class__.__name__
-        try:
-            param['datetime'] = param['datetime'].strftime("%Y-%m-%d %H:%M:%S")
-        except AttributeError:
-            param['datetime'] = ''
-        return ("<%(clsname)s %(datetime)s [%(user)s@%(host)s] "
-                "%(query_time)s/%(lock_time)s/%(rows_examined)s/%(rows_sent)s>"
-               ) % param
+    # def __str__(self):
+    #     """String representation of SlowQueryLogEntry
+    #     """
+    #     param = self.copy()
+    #     param['clsname'] = self.__class__.__name__
+    #     try:
+    #         param['datetime'] = param['datetime'].strftime("%Y-%m-%d %H:%M:%S")
+    #     except AttributeError:
+    #         param['datetime'] = ''
+    #     return ("<%(clsname)s %(datetime)s [%(user)s@%(host)s] "
+    #             "%(query_time)s/%(lock_time)s/%(rows_examined)s/%(rows_sent)s>"
+    #            ) % param

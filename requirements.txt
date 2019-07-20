@@ -10,3 +10,4 @@ pypcap
 dpkt
 sqlparse
 python-dateutil
+sh

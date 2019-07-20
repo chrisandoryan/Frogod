@@ -54,10 +54,13 @@ from sqlparse.tokens import Token
 from utils import tail
 import time
 import csv
+import os
 
 SLOW_QUERY_LOG_PATH = '/var/log/mysql/slow-query.log' # path to mysql slow query log file
 
 class SlowQueryParser(object):
+
+    outOfContextQueries = ("# administrator command:", "USE ")
 
     def __init__(self, stream):
         self.stream = stream
@@ -135,49 +138,66 @@ class SlowQueryParser(object):
             yield data
 
     def calc_stats(self):
-        slow_queries = {}
+        # slow_queries = []
         for e in SlowQueryLog(self.stream):
-            print(e)
+            # print(e)
             if not e.query_time:
                 continue
             try:
                 query_pattern = self.pattern(self.clean(e.query))
             except:
                 pass
-            if query_pattern not in slow_queries:
-                slow_queries[query_pattern] = []
-            slow_queries[query_pattern].append(e)
-            ret = {}
-            for query_pattern, entry_list in list(slow_queries.items()):
-                entry = {
-                    'org': entry_list[0],
-                    'query_time': e.query_time,
-                    'query_pattern': query_pattern,
-                    'query': self.clean(entry_list[0].query),
-                    'rows_sent': e.rows_sent,
-                    'rows_examined': e.rows_examined,
-                }
-                # ret[query_pattern] = entry
-                yield entry
+            # if query_pattern not in slow_queries:
+            #     slow_queries[query_pattern] = []
+            # slow_queries[query_pattern].append(e)
+            # slow_queries.append(e)
+            # print(slow_queries)
+            entry = {
+                'org': {
+                    'datetime': e.datetime,
+                    'database': e.database,
+                    'user': e.user,
+                    'host': e.host,
+                },
+                'query_time': e.query_time,
+                'query_pattern': query_pattern,
+                'query': self.clean(e.query),
+                'rows_sent': e.rows_sent,
+                'rows_examined': e.rows_examined,
+            }
+            # for entry_list in slow_queries:
+            #     entry = {
+            #         'org': entry_list[0],
+            #         'query_time': e.query_time,
+            #         'query_pattern': query_pattern,
+            #         'query': self.clean(entry_list[0].query),
+            #         'rows_sent': e.rows_sent,
+            #         'rows_examined': e.rows_examined,
+            #     }
+            # print(entry)
+            # ret[query_pattern] = entry
+            yield entry
 
     def start_parser(self):
         stats = self.calc_stats()
         res = []
         for s in stats:
             # print('[*] query: %s, time: %.2fs, rows: %d' % (self.prettify_sql(s['query']), s['query_time'], s['rows_sent']))
-            with open('data_temp/LOG_mysql.csv', 'a') as f:
-                obj = {
-                    'query': s['query'],
-                    'query_time': s['query_time'],
-                    'rows_sent': s['rows_sent'],
-                    'rows_examined': s['rows_examined'],
-                    'timestamp': int(time.mktime(s['org']['datetime'].timetuple()))
-                }   
-                writer = csv.writer(f)
-                writer.writerow(list(obj.values())) 
-                print(obj)
-                # print(time.mktime(s['org']['datetime'].timetuple()))
-                # yield obj
+            if not s['query'].startswith(self.outOfContextQueries):
+                with open('data_temp/LOG_mysql.csv', 'a') as f:
+                    obj = {
+                        'query': s['query'],
+                        'query_time': s['query_time'],
+                        'rows_sent': s['rows_sent'],
+                        'rows_examined': s['rows_examined'],
+                        'timestamp': int(time.mktime(s['org']['datetime'].timetuple()))
+                    }   
+                    writer = csv.writer(f)
+                    writer.writerow(list(obj.values())) 
+                    # os.system("clear")
+                    print(obj)
+                    # print(time.mktime(s['org']['datetime'].timetuple()))
+                    # yield obj
             # for query_pattern, entry in list(s.items()):
             #     res.append(entry)
             # for q in res:

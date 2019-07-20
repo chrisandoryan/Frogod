@@ -1,5 +1,9 @@
 import time
 import requests
+import sh
+from pygtail import Pygtail
+import sys
+import tailer
 
 def tail(logfile):
     logfile.seek(0, 2)
@@ -10,6 +14,9 @@ def tail(logfile):
             continue
         # print(line)
         yield line
+    # tail = sh.tail("-F", logfile, _iter=True)
+    # return tail
+    # return tailer.follow(logfile)
 
 def send_request(url, payload, method):
     if method == "GET":
