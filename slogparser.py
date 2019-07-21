@@ -208,6 +208,7 @@ def main():
     logfile = open(SLOW_QUERY_LOG_PATH, 'r')
     loglines = tail(logfile)
 
+    print("Starting...")
     query_parser = SlowQueryParser(loglines)
     query_parser.start_parser()
 

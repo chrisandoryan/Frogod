@@ -1,3 +1,4 @@
 *.pyc
 experimental/
 data*.0/
+data_temp/
