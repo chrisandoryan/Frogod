@@ -12,6 +12,8 @@ HTTP_LOG_FILE = "./data6.0/data6.0/GET_http.csv"
 SQL_LOG_FILE = "./data6.0/data6.0/LOG_mysql.csv"
 AGGREGATED_LOG_FILE = "./data6.0/data6.0/AGG.csv"
 
+JOIN_HELPER = 1
+
 hlog = open(HTTP_LOG_FILE, 'r')
 hlog_reader = pd.read_csv(HTTP_LOG_FILE) # csv.DictReader(hlog) # csv.reader(hlog, delimiter=',')
 hlog_reader['payload'] = hlog_reader['payload'].astype(str) 
@@ -21,11 +23,6 @@ slog_reader = pd.read_csv(SQL_LOG_FILE) # csv.DictReader(slog) # csv.reader(slog
 slog_reader['query'] = slog_reader['query'].astype(str) 
 
 # print(hlog_reader.head())
-
-def get_loose_timestamp(index):
-    ts = hlog_reader.iloc[index,:]['timestamp']
-    return [ts - 1, ts, ts + 1]
-    # print(hlog_reader[i])
 
 # hlog_grouptimestamp = hlog_reader.groupby(['timestamp'])
 
@@ -49,14 +46,27 @@ print("Combining...")
 
 # result = pd.concat([hlog_grouptimestamp, slog_grouptimestamp], axis=1)
 # print(result)
-def get_where_value(token):
+def get_sql_where_value(token):
     # only work for single WHERE value comparison rn
     return re.search(r"'.*'", token).group()
 
-def get_where_token(tokens):
+def get_sql_where_token(tokens):
     for t in tokens:
         if type(t) is sqlparse.sql.Where:
             return t
+
+def get_loose_timestamp_data(r, df):
+    loose_timestamp = []
+    for i in list(range(-r, r + 1)):
+        timestamp = df['timestamp'] + i
+
+        slog = slog_grouptimestamp.get_group(timestamp) if timestamp in slog_grouptimestamp.groups else pd.DataFrame()
+
+        subts = [(timestamp, skey, srow['query']) for skey, srow in slog.iterrows() if df['payload'] in srow['query']]
+
+        loose_timestamp = list(set(loose_timestamp) | set(subts))
+
+    return loose_timestamp
 
 def get_similar(df):
     # print([srow['query'] for (skey, srow) in slog_grouptimestamp])
@@ -66,36 +76,40 @@ def get_similar(df):
     # res = process.extractOne(df['payload'], [i for (skey, srow) in slog_grouptimestamp for i in srow['query']])
     # result = process.extractOne(df['payload'], {idx: el for idx, el in enumerate([srow['query'] for skey, srow in slog_grouptimestamp.get_group(df['timestamp']).iterrows()] if df['timestamp'] in slog_grouptimestamp.groups else [])}) 
     # print(result) #score_cutoff=90)
-    timestamp = df['timestamp'] - 1
-    x = slog_grouptimestamp.get_group(df['timestamp'] - 1) if df['timestamp'] - 1 in slog_grouptimestamp.groups else pd.DataFrame()
-    lt = [(timestamp, skey - 1, srow['query']) for skey, srow in x.iterrows() if df['payload'] in srow['query']]
+    loose_timestamp = get_loose_timestamp_data(2, df)
+    # print(len(loose_timestamp))
 
-    timestamp = df['timestamp']
-    x = slog_grouptimestamp.get_group(df['timestamp']) if df['timestamp'] in slog_grouptimestamp.groups else pd.DataFrame()
-    eq = [(timestamp, skey - 1, srow['query']) for skey, srow in x.iterrows() if df['payload'] in srow['query']]
-
-    timestamp = df['timestamp'] + 1
-    x = slog_grouptimestamp.get_group(df['timestamp'] + 1) if df['timestamp'] + 1 in slog_grouptimestamp.groups else pd.DataFrame()
-    gt = [(timestamp, skey - 1, srow['query']) for skey, srow in x.iterrows() if df['payload'] in srow['query']]
-
-    loose_timestamp = list(set(lt) | set(eq) | set(gt)) 
-
-    for ts, index, query in loose_timestamp:
-        print("'%s'" % df['payload'])
+    for ts, idx, q in loose_timestamp:
+        # print("'%s'" % df['payload'])
+        query = q
         query = sqlparse.parse(query)
         # print(type(query[0].tokens[-1]) is sqlparse.sql.Where)
-        query = get_where_value(str(get_where_token(query[0].tokens)))
-        print(query)
+        query = get_sql_where_value(str(get_sql_where_token(query[0].tokens)))
+        # print(query)
         if "'%s'" % df['payload'] == query:
             # print(df['payload'])
-            # print(query)
-            print((ts, index, query))
-            print(slog_grouptimestamp.get_group(ts))
-            sdata = slog_grouptimestamp.get_group(ts).iloc[index,:] if ts in slog_grouptimestamp.groups else None
+            # print("Tuple: ",)
+            # print((ts, idx, qry))
+            # print(slog_grouptimestamp.get_group(ts).to_string())
+            # https://stackoverflow.com/questions/47665812/index-out-of-bound-when-iterrow-how-is-this-possible
+            sdata = slog_grouptimestamp.get_group(ts).loc[idx,:] if ts in slog_grouptimestamp.groups else None
+            sdata['jh'] = JOIN_HELPER
+            df['jh'] = JOIN_HELPER
+            # print("Query in sdata: ",)
+            # print(sdata['timestamp'], sdata['query'])
+            # combined = pd.concat([df, sdata], axis=1, sort=False, ignore_index=True)
+            # print(combined)
             sdata = pd.DataFrame(sdata).transpose()
-            # df = pd.DataFrame(df).transpose()
-        else:
-            print("Skipping..")
+            df = pd.DataFrame(df).transpose()
+            joined = pd.merge(left=df, right=sdata, how='outer', on='jh')
+            joined.drop(['jh'], axis=1, inplace=True)
+            # print(joined.to_string())
+            # input()
+            with open(AGGREGATED_LOG_FILE, 'a') as f:
+                joined.to_csv(f, encoding='utf-8', index=False, header=f.tell()==0)
+
+        # else:
+        #     print("Skipping..")
     #print([df['payload'] in query for query in loose_timestamp])
 
     # if result is not None:
