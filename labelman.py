@@ -41,11 +41,17 @@ def replay_csic_dataset(mode):
             if row[17].strip() == mode:
                 raw_payload = urllib.parse.unquote_plus(row[16].strip())
                 payload = dict(re.findall(r'(\S+)=(".*?"|\S+)', str(raw_payload)))
-                print(payload)
-                # print(urllib.parse.urlencode(payload, quote_via=urllib.parse.quote))
-                utils.send_request('http://localhost/', payload, row[1])
-                send_count += 1
+                # for key, value in payload:
+                #     print(value)
+                # print(list(payload.keys()))
+                if payload:
+                    # field, value = payload.items()[0]
+                    print(payload[list(payload.keys())[0]])
+                    utils.send_request('http://localhost/DVWA/vulnerabilities/sqli/', {'id': payload[list(payload.keys())[0]], 'Submit': 'Submit'}, row[1])
+                    send_count += 1
             line_count += 1
+            if send_count >= 3500:
+                return
 
     print("Finished sending %d requests" % send_count)
 

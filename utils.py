@@ -19,11 +19,16 @@ def tail(logfile):
     # return tailer.follow(logfile)
 
 def send_request(url, payload, method):
+    s = requests.Session()
+    cookie = {
+        "PHPSESSID": "lioef79pemtea2avicmsfm5u92",
+        "security": "low"
+    }
     if method == "GET":
-        res = requests.get(url, params=payload)
+        res = s.get(url, params=payload, cookies=cookie, allow_redirects=False)
     elif method == "POST":
-        res = requests.post(url, data=payload)
-    # print(res.status_code)
+        res = s.post(url, data=payload, cookies=cookie, allow_redirects=False)
+    print(res.status_code)
 
 def expand(x):
     yield x

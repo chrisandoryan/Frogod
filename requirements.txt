@@ -12,3 +12,4 @@ sqlparse
 python-dateutil
 sh
 fuzzywuzzy[speedup]
+sqlparse

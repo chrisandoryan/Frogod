@@ -34,6 +34,8 @@ def process_packets(packet):
         # print(packet[http.HTTPRequest])
         
         inbound = url if args.get else load
+        timestamp = int(time.time())
+         
         # print(args.technique)
 
         # logs = pelotot.parsing(inbound)
@@ -51,12 +53,12 @@ def process_packets(packet):
                 s['label'] = 'threat'
             if (args.technique):
                 s['technique'] = args.technique
-            with open('data_temp/{}.json'.format('GET_http' if args.get else 'POST_http'), 'a') as f:
-                f.write(json.dumps(s) + "\n")
+            # with open('data_temp/{}.json'.format('GET_http' if args.get else 'POST_http'), 'a') as f:
+            #     f.write(json.dumps(s) + "\n")
             with open('data_temp/{}.csv'.format('GET_http' if args.get else 'POST_http'), 'a') as f:
                 # convert {0: 1.5, 1: 2.2, ...} to [1.5, 2.2, ...] to 1.5 2.2, ...
                 s['centrality'] = ' '.join(map(str, list(s['centrality'].values())))
-                s['timestamp'] = int(time.time())
+                s['timestamp'] = timestamp
                 writer = csv.writer(f)
                 writer.writerow(list(s.values()))
             count += 1
