@@ -69,6 +69,8 @@ def get_loose_timestamp_data(r, df):
     return loose_timestamp
 
 def get_similar(df):
+    # print(df.head())
+    # return
     # print([srow['query'] for (skey, srow) in slog_grouptimestamp])
     # for skey, srow in slog_grouptimestamp.get_group(df['timestamp']).iterrows():
     #     print(srow['query'])
@@ -108,8 +110,9 @@ def get_similar(df):
             with open(AGGREGATED_LOG_FILE, 'a') as f:
                 joined.to_csv(f, encoding='utf-8', index=False, header=f.tell()==0)
 
-        # else:
-        #     print("Skipping..")
+        else:
+            print("'%s'" % df.to_string())
+            # input()
     #print([df['payload'] in query for query in loose_timestamp])
 
     # if result is not None:

@@ -27,25 +27,48 @@ kernel = "rbf"
 c = 10
 """                    """
 
+DATASET_LOCATION = "./data6.0/data6.0/AGG_np.csv"
+UNUSED_COLS = [
+    "payload",
+    "req_method",
+    "u_agent",
+    "category",
+    "centrality",
+    "timestamp_x",
+    "timestamp_y",
+]
+
+def drop_unused_columns(data):
+    for i in UNUSED_COLS:
+        data.drop(i, axis=1, inplace=True)
+
 def train_model():
-    data = pd.read_csv('./samples/GET_new.csv')
-    # print(data.shape)
-    # print(data.head())
+    data = pd.read_csv(DATASET_LOCATION)
+    print(data.shape)
+    print(data.head())
+
+    # input()
 
     # remove unused data column
-    data.drop('uagent', axis=1, inplace=True)
-    data.drop('reqmethod', axis=1, inplace=True)
-    data.drop('payload', axis=1, inplace=True)
-    data.drop('class', axis=1, inplace=True)
+    drop_unused_columns(data)
+    # data.drop('uagent', axis=1, inplace=True)
+    # data.drop('reqmethod', axis=1, inplace=True)
+    # data.drop('payload', axis=1, inplace=True)
+    # data.drop('class', axis=1, inplace=True)
     # data.drop('centrality', axis=1, inplace=True)
     # data.drop('length', axis=1, inplace=True)
 
+    print(data.shape)
+    print(data.head())
+
+    # input()
+
     # data separation
-    X = data.drop('label', axis=1)  
+    X = data.drop('class', axis=1)  
     X = X.select_dtypes(include=[object])
     print(X.head())
 
-    y = data['label']
+    y = data['class']
 
     count_vec = CountVectorizer()
     count_occurs = count_vec.fit_transform(X['token'])
@@ -83,7 +106,6 @@ def train_model():
     # print(onehotlabels.shape)
 
     X_train, X_test, y_train, y_test = train_test_split(X_t, y, test_size = 0.30)
-
 
     svclassifier = SVC(kernel=kernel, gamma=gamma, C=c, cache_size=7000, verbose=True)  
     svclassifier.fit(X_train, y_train)
