@@ -8,19 +8,23 @@ import re
 
 # https://www.shanelynn.ie/summarising-aggregation-and-grouping-data-in-python-pandas/
 
-HTTP_LOG_FILE = "./data6.0/data6.0/GET_http.csv"
-SQL_LOG_FILE = "./data6.0/data6.0/LOG_mysql.csv"
-AGGREGATED_LOG_FILE = "./data6.0/data6.0/AGG.csv"
+HTTP_LOG_FILE = "./data_temp/GET_http.csv"
+SQL_LOG_FILE = "./data_temp/LOG_mysql.csv"
+AGGREGATED_LOG_FILE = "./data_temp/AGG.csv"
 
 JOIN_HELPER = 1
 
 hlog = open(HTTP_LOG_FILE, 'r')
 hlog_reader = pd.read_csv(HTTP_LOG_FILE) # csv.DictReader(hlog) # csv.reader(hlog, delimiter=',')
 hlog_reader['payload'] = hlog_reader['payload'].astype(str) 
+hlog_reader.drop_duplicates(subset=["payload"], inplace=True)
+
 
 slog = open(SQL_LOG_FILE, 'r')
 slog_reader = pd.read_csv(SQL_LOG_FILE) # csv.DictReader(slog) # csv.reader(slog, delimiter=',')
 slog_reader['query'] = slog_reader['query'].astype(str) 
+slog_reader.drop_duplicates(subset=["query"], inplace=True)
+
 
 # print(hlog_reader.head())
 
@@ -78,7 +82,7 @@ def get_similar(df):
     # res = process.extractOne(df['payload'], [i for (skey, srow) in slog_grouptimestamp for i in srow['query']])
     # result = process.extractOne(df['payload'], {idx: el for idx, el in enumerate([srow['query'] for skey, srow in slog_grouptimestamp.get_group(df['timestamp']).iterrows()] if df['timestamp'] in slog_grouptimestamp.groups else [])}) 
     # print(result) #score_cutoff=90)
-    loose_timestamp = get_loose_timestamp_data(2, df)
+    loose_timestamp = get_loose_timestamp_data(3, df)
     # print(len(loose_timestamp))
 
     for ts, idx, q in loose_timestamp:

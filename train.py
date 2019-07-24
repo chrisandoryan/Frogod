@@ -2,11 +2,13 @@ from sklearn import svm
 import pandas as pd  
 import numpy as np  
 import matplotlib.pyplot as plt
+import seaborn as sns
 from mlxtend.plotting import plot_decision_regions
 
 from sklearn.model_selection import train_test_split  
 from sklearn.model_selection import cross_val_score
-from sklearn.svm import SVC  
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
 
 from sklearn.metrics import classification_report, confusion_matrix  
 from sklearn.metrics import accuracy_score
@@ -16,27 +18,37 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import RobustScaler
 from sklearn.feature_extraction.text import CountVectorizer
 
+
 from sklearn.naive_bayes import GaussianNB
 
 
 from sklearn.externals import joblib
 
 """  Parameter Tuning  """
-gamma = 100
+# gamma = 100
 kernel = "rbf"
-c = 10
+# c = 10
 """                    """
 
-DATASET_LOCATION = "./data6.0/data6.0/AGG_np.csv"
+DATASET_LOCATION = "./data_temp/AGG.csv"
 UNUSED_COLS = [
     "payload",
+    "query",
     "req_method",
     "u_agent",
     "category",
-    "centrality",
     "timestamp_x",
     "timestamp_y",
 ]
+
+def svc_param_selection(X, y, nfolds):
+    Cs = [0.001, 0.01, 0.1, 1, 10]
+    gammas = [0.001, 0.01, 0.1, 1]
+    param_grid = {'C': Cs, 'gamma' : gammas}
+    grid_search = GridSearchCV(svm.SVC(kernel='rbf'), param_grid, cv=nfolds)
+    grid_search.fit(X, y)
+    grid_search.best_params_
+    return grid_search.best_params_
 
 def drop_unused_columns(data):
     for i in UNUSED_COLS:
@@ -44,13 +56,17 @@ def drop_unused_columns(data):
 
 def train_model():
     data = pd.read_csv(DATASET_LOCATION)
+    data.drop_duplicates(subset=["payload","query"], inplace=True)
     print(data.shape)
-    print(data.head())
-
-    # input()
-
+    # print(data.head())
+    
     # remove unused data column
     drop_unused_columns(data)
+
+
+    print(data.groupby('class').size())
+    # sns.heatmap(data.corr() , annot=True)
+    # plt.show()
     # data.drop('uagent', axis=1, inplace=True)
     # data.drop('reqmethod', axis=1, inplace=True)
     # data.drop('payload', axis=1, inplace=True)
@@ -58,14 +74,18 @@ def train_model():
     # data.drop('centrality', axis=1, inplace=True)
     # data.drop('length', axis=1, inplace=True)
 
+    print("DATAHEAD")
     print(data.shape)
     print(data.head())
 
     # input()
+    # input()
 
     # data separation
     X = data.drop('class', axis=1)  
-    X = X.select_dtypes(include=[object])
+    # X_nonumer = X.select_dtypes(include=[object])
+    print("XHEAD")
+    print(X.shape)
     print(X.head())
 
     y = data['class']
@@ -86,7 +106,7 @@ def train_model():
     X_t = scaler.fit_transform(X_t)
 
     print(X_t)
-    input("Holding...")
+    # input("Holding...")
     # count_occur_df = pd.DataFrame(
     # (count, word) for word, count in
     #  zip(count_occurs.toarray().tolist()[0], 
@@ -105,9 +125,15 @@ def train_model():
     # onehotlabels = label_encoder.transform(X_t).toarray()
     # print(onehotlabels.shape)
 
-    X_train, X_test, y_train, y_test = train_test_split(X_t, y, test_size = 0.30)
+    X_train, X_test, y_train, y_test = train_test_split(X_t, y, random_state=0, test_size = 0.30, stratify=y_t)
 
-    svclassifier = SVC(kernel=kernel, gamma=gamma, C=c, cache_size=7000, verbose=True)  
+    bp = svc_param_selection(X_train, y_train, 10)
+
+    # input("Best params selected..")
+    print("Best kernel param: ")
+    print(bp)
+
+    svclassifier = SVC(kernel=kernel, gamma=bp['gamma'], C=bp['C'], cache_size=7000, verbose=True)  
     svclassifier.fit(X_train, y_train)
 
     y_pred = svclassifier.predict(X_test)
@@ -122,7 +148,6 @@ def train_model():
     print(rept)
     print(acc)
 
-
     bayesclassifier = GaussianNB()
     bayesclassifier.fit(X_train, y_train)
 
@@ -136,9 +161,9 @@ def train_model():
 
     print(conf)
     print(rept)
-    print(acc)
+    # input(acc)
 
-    input("Holding...")
+    # input("Holding...")
 
     scores = cross_val_score(svclassifier, X_t, y_t, cv=10)
     print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
@@ -158,6 +183,7 @@ def train_model():
     # plt.imshow(conf, cmap='binary', interpolation='None')
 
     model_columns = list(X.columns)
+    print("Model columns: ")
     print(model_columns)
 
     joblib.dump(svclassifier, './models/model.pkl')

