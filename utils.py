@@ -21,7 +21,7 @@ def tail(logfile):
 def send_request(url, payload, method):
     s = requests.Session()
     cookie = {
-        "PHPSESSID": "kb7opmp85s5pr4tinh1050us5q",
+        "PHPSESSID": "6i865obsioa6a1q609q1fb543h",
         "security": "low"
     }
     if method == "GET":

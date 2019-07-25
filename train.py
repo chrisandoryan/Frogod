@@ -65,8 +65,8 @@ def train_model():
 
 
     print(data.groupby('class').size())
-    # sns.heatmap(data.corr() , annot=True)
-    # plt.show()
+    sns.heatmap(data.corr() , annot=True)
+    plt.show()
     # data.drop('uagent', axis=1, inplace=True)
     # data.drop('reqmethod', axis=1, inplace=True)
     # data.drop('payload', axis=1, inplace=True)

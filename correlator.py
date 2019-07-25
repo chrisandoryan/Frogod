@@ -92,7 +92,8 @@ def get_similar(df):
         # print(type(query[0].tokens[-1]) is sqlparse.sql.Where)
         query = get_sql_where_value(str(get_sql_where_token(query[0].tokens)))
         # print(query)
-        if "'%s'" % df['payload'] == query:
+        reformatted = "'%s'" % df['payload']
+        if reformatted == query:
             # print(df['payload'])
             # print("Tuple: ",)
             # print((ts, idx, qry))
@@ -115,7 +116,9 @@ def get_similar(df):
                 joined.to_csv(f, encoding='utf-8', index=False, header=f.tell()==0)
 
         else:
-            print("'%s'" % df.to_string())
+            print("NOT MATCHED")
+            print("'%s'" % df['payload'])
+            print("'%s'" % query)
             # input()
     #print([df['payload'] in query for query in loose_timestamp])
 

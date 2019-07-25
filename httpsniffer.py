@@ -60,6 +60,7 @@ def process_packets(packet):
                 s['centrality'] = ' '.join(map(str, list(s['centrality'].values())))
                 s['timestamp'] = timestamp
                 writer = csv.writer(f)
+                # writer.writerow(list(s.keys()))
                 writer.writerow(list(s.values()))
             count += 1
 

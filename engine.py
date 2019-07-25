@@ -132,8 +132,9 @@ def tokenize(payload):
 
                         # collect data for model training
                         sample = {
-                            'raw_payload': raw,
-                            'tokenized_payload': nq,
+                            'payload': raw,
+                            'payload_len': len(raw),
+                            'token': nq,
                             'centrality': cent
                         }
 

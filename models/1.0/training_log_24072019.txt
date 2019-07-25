@@ -734,9 +734,9 @@ class
 incorrect     303
 inference    2150
 normal        551
-piggyback     114
-tautology     231
-union         134
+piggyback     114 -200
+tautology     231 -100
+union         134 -200
 dtype: int64
 DATAHEAD
 (3483, 6)
