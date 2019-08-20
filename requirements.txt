@@ -13,3 +13,6 @@ python-dateutil
 sh
 fuzzywuzzy[speedup]
 sqlparse
+tailer
+pygtail
+cython

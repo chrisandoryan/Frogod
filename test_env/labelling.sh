@@ -5,7 +5,7 @@ rm -rf /root/.sqlmap/output/*
 echo "Cleaning sqlmap session.."
 rm -rf /var/log/mysql/slow-query.log
 echo "Cleaning MySQL log directory.."
-mysql -u root -p < ./test_env/en_slog.sql
+mysql -u root  < ./test_env/en_slog.sql
 echo "Enabling MySQL slow query log configuration.."
 # python3 slogparser.py &
 # slog_pid=($!)

@@ -5,12 +5,16 @@ from fuzzywuzzy import process
 from fuzzywuzzy import fuzz
 import sqlparse
 import re
+import os
 
 # https://www.shanelynn.ie/summarising-aggregation-and-grouping-data-in-python-pandas/
 
 HTTP_LOG_FILE = "./data_temp/GET_http.csv"
 SQL_LOG_FILE = "./data_temp/LOG_mysql.csv"
 AGGREGATED_LOG_FILE = "./data_temp/AGG.csv"
+
+if not os.path.isdir('data_temp'):
+    os.mkdir('data_temp')
 
 JOIN_HELPER = 1
 

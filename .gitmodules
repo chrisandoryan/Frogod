@@ -1,0 +1,3 @@
+[submodule "python-netfilterqueue"]
+	path = python-netfilterqueue
+	url = git@github.com:kti/python-netfilterqueue.git
