@@ -187,6 +187,7 @@ def train_model():
     print(model_columns)
 
     joblib.dump(svclassifier, './models/model.pkl')
+    joblib.dump(model_columns, './models/model_columns.pkl')
 
 if __name__ == "__main__":
     train_model()
