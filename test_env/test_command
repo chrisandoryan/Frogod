@@ -1,9 +1,0 @@
-sqlmap -u "http://localhost/" --data "username=ando&password=ando1234&email=chrisando@gmail.com&submit=Submit" --level 5 --risk 3 --dbs mysql
-
-level 2 and single parameter post
-sqlmap -u "http://localhost/" --data "username=jackobryan" --dbs mysql
-
-level 3 and single query param get
-sqlmap -u "http://localhost/?id=1" --dbs mysql --level 2 --risk 2
-
-
