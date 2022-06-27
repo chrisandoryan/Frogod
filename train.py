@@ -162,8 +162,8 @@ def train_model():
     # labels, title and ticks
     ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels'); 
     ax.set_title('Confusion Matrix'); 
-    ax.xaxis.set_ticklabels(['len_payload', 'token', 'centrality', 'query_stack', 'query_time', 'rows_send', 'rows_examined']); 
-    ax.yaxis.set_ticklabels(['len_payload', 'token', 'centrality', 'query_stack', 'query_time', 'rows_send', 'rows_examined'][::-1]);
+    ax.xaxis.set_ticklabels(['incorrect', 'inference', 'normal', 'piggyback', 'tautology', 'union']); 
+    ax.yaxis.set_ticklabels(['incorrect', 'inference', 'normal', 'piggyback', 'tautology', 'union'][::-1]);
     
     plt.savefig('conf_matrix.png')
 
