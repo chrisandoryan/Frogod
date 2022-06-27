@@ -21,8 +21,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 from sklearn.naive_bayes import GaussianNB
 
-
-from sklearn.externals import joblib
+import joblib
 
 """  Parameter Tuning  """
 # gamma = 100
