@@ -156,7 +156,18 @@ def train_model():
     conf = confusion_matrix(y_test,y_pred)
     rept = classification_report(y_test,y_pred)
     acc = accuracy_score(y_pred, y_test)
+
+    ax= plt.subplot()
+    sns.heatmap(conf, annot=True, fmt='g', ax=ax);  #annot=True to annotate cells, ftm='g' to disable scientific notation
+
+    # labels, title and ticks
+    ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels'); 
+    ax.set_title('Confusion Matrix'); 
+    ax.xaxis.set_ticklabels(['len_payload', 'token', 'centrality', 'query_stack', 'query_time', 'rows_send', 'rows_examined']); 
+    ax.yaxis.set_ticklabels(['len_payload', 'token', 'centrality', 'query_stack', 'query_time', 'rows_send', 'rows_examined'][::-1]);
     
+    plt.savefig('conf_matrix.png')
+
     print("Training using Naive Bayes...")
 
     print(conf)
